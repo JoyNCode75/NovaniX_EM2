@@ -1,0 +1,648 @@
+﻿<UserControl x:Class="NovaniX_EM2.Views.MotionControlView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:helpers="clr-namespace:NovaniX_EM2.Helpers"
+             Background="Transparent">
+
+    <UserControl.Resources>
+        <helpers:BoolToColorConverter x:Key="BoolToColorConverter"/>
+        <helpers:InverseBoolConverter x:Key="InverseBoolConverter"/>
+    </UserControl.Resources>
+    
+    <Grid Margin="5,15,15,15">
+        <TabControl Background="White" BorderBrush="#DDDDDD" BorderThickness="1">
+            <TabItem Header="Gripper 제어" FontSize="14" FontWeight="Bold">
+                <Grid Margin="15">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10" VerticalAlignment="Center">
+                        <TextBlock Text="COM Port:" VerticalAlignment="Center" FontWeight="Bold" Margin="0,0,8,0" FontSize="13"/>
+
+                        <ComboBox ItemsSource="{Binding AvailablePorts}" SelectedItem="{Binding GripperSelectedPort}" Width="85" Height="28" VerticalContentAlignment="Center"
+              IsEnabled="{Binding IsGripperConnected, Converter={StaticResource InverseBoolConverter}}" Margin="0,0,4,0"/>
+
+                        <Button Content="↻" Command="{Binding RefreshPortsCommand}" Width="28" Height="28" 
+            IsEnabled="{Binding IsGripperConnected, Converter={StaticResource InverseBoolConverter}}" ToolTip="포트 스캔" Margin="0,0,15,0"/>
+
+                        <Button Command="{Binding ConnectGripperCommand}" Width="100" Height="28" Margin="0,0,15,0">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Content" Value="Connect"/>
+                                    <Setter Property="Background" Value="#E3F2FD"/>
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsGripperConnected}" Value="True">
+                                            <Setter Property="Content" Value="Disconnect"/>
+                                            <Setter Property="Background" Value="#FFCDD2"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                        <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="0,0,15,0"/>
+
+                        <Button Command="{Binding InitAllCommand}" Width="120" Height="28" Margin="0,0,15,0">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Content" Value="ALL INIT (Home)"/>
+                                    <Setter Property="Background" Value="#E0E0E0"/>
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsGripperInitialized}" Value="True">
+                                            <Setter Property="Background" Value="#81C784"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                        <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="0,0,15,0"/>
+
+                        <Button Content="그리퍼 설정 불러오기" Command="{Binding LoadGripperCommand}" Background="#607D8B" Foreground="White" FontWeight="Bold" Width="150" Height="28" Margin="0,0,10,0"/>
+
+                        <Button Content="그리퍼 설정 저장" Command="{Binding SaveGripperCommand}" Background="#009688" Foreground="White" FontWeight="Bold" Width="130" Height="28"/>
+                    </StackPanel>
+                    <Grid Grid.Row="1" Margin="0,0,0,20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="20"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <GroupBox Grid.Column="0" Header="Linear Movement (Gripping)" Padding="10" BorderBrush="#FF005C96" BorderThickness="1">
+                            <Grid IsEnabled="{Binding IsGripperInitialized}">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="40"/>
+                                </Grid.RowDefinitions>
+
+                                <StackPanel Grid.Row="0" Margin="0,0,0,10">
+                                    <TextBlock FontWeight="Bold">
+                    <Run Text="Target Position: "/>
+                    <Run Text="{Binding GripperTargetPosPercent}" Foreground="#FF005C96"/>
+                    <Run Text="% (0:Close ~ 100:Open)"/>
+                                    </TextBlock>
+                                    <Slider Value="{Binding GripperTargetPosPercent}" Minimum="0" Maximum="100" IsSnapToTickEnabled="True" TickFrequency="1" VerticalAlignment="Center"/>
+                                </StackPanel>
+
+                                <UniformGrid Grid.Row="1" Columns="2" Margin="0,0,0,10">
+                                    <StackPanel Margin="0,0,10,0">
+                                        <TextBlock Text="Speed (%)" FontWeight="Bold"/>
+                                        <TextBox Text="{Binding GripperMoveSpeedPercent}" Height="26" VerticalContentAlignment="Center"/>
+                                    </StackPanel>
+                                    <StackPanel>
+                                        <TextBlock Text="Force (%)" FontWeight="Bold"/>
+                                        <TextBox Text="{Binding GripperForcePercent}" Height="26" VerticalContentAlignment="Center"/>
+                                    </StackPanel>
+                                </UniformGrid>
+
+                                <UniformGrid Grid.Row="2" Columns="3">
+                                    <Button Content="Close (0%)" Command="{Binding GripperCloseCommand}" Background="#FFCDD2" FontWeight="Bold" Margin="0,0,5,0"/>
+                                    <Button Content="Open (100%)" Command="{Binding GripperOpenCommand}" Background="#C8E6C9" FontWeight="Bold" Margin="0,0,5,0"/>
+                                    <Button Content="이동 (Move)" Command="{Binding MoveGripperCommand}" Background="#E3F2FD" FontWeight="Bold"/>
+                                </UniformGrid>
+                            </Grid>
+                        </GroupBox>
+
+                        <GroupBox Grid.Column="2" Header="Angle Rotation" Padding="10" BorderBrush="#D84315" BorderThickness="1">
+                            <Grid IsEnabled="{Binding IsRotationInitialized}">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="40"/>
+                                </Grid.RowDefinitions>
+
+                                <StackPanel Grid.Row="0" Margin="0,0,0,10">
+                                    <TextBlock FontWeight="Bold">
+                                        <Run Text="Target Rotation: "/>
+                                        <Run Text="{Binding GripperTargetRotationAngle}" Foreground="#D84315"/>
+                                        <Run Text="° (0~360°)"/>
+                                    </TextBlock>
+                                    <Slider Value="{Binding GripperTargetRotationAngle}" Minimum="0" Maximum="360" IsSnapToTickEnabled="True" TickFrequency="1" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <UniformGrid Grid.Row="1" Columns="2" Margin="0,0,0,10">
+                                    <StackPanel Margin="0,0,10,0">
+                                        <TextBlock Text="Speed (%)" FontWeight="Bold"/>
+                                        <TextBox Text="{Binding GripperRotationSpeedPercent}" Height="26" VerticalContentAlignment="Center"/>
+                                    </StackPanel>
+                                    <StackPanel>
+                                        <TextBlock Text="Torque (%)" FontWeight="Bold"/>
+                                        <TextBox Text="{Binding GripperTorquePercent}" Height="26" VerticalContentAlignment="Center"/>
+                                    </StackPanel>
+                                </UniformGrid>
+
+                                <UniformGrid Grid.Row="2" Columns="3">
+                                    <Button Content="0° 회전" Command="{Binding Rotate0Command}" Background="#FFF9C4" FontWeight="Bold" Margin="0,0,5,0"/>
+                                    <Button Content="180° 회전" Command="{Binding Rotate180Command}" Background="#FFF9C4" FontWeight="Bold" Margin="0,0,5,0"/>
+                                    <Button Content="회전 (Rotate)" Command="{Binding RotateGripperCommand}" Background="#FFF3E0" FontWeight="Bold"/>
+                                </UniformGrid>
+                            </Grid>
+                        </GroupBox>
+                    </Grid>
+
+                    <GroupBox Grid.Row="2" Header="그리퍼 상태 및 동작 시각화 (실시간 연동)" Padding="15" BorderBrush="Gray" BorderThickness="1">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <Border Grid.Row="0" Background="#F9F9F9" BorderBrush="#CCC" BorderThickness="1" CornerRadius="3" Padding="10" Margin="0,0,0,10">
+                                <UniformGrid Columns="4">
+                                    <StackPanel Orientation="Horizontal" Margin="5">
+                                        <TextBlock Text="Init Status :" FontWeight="Bold" Foreground="#555" Margin="0,0,5,0"/>
+                                        <TextBlock Text="{Binding GripperInitStatusText}" Foreground="#007ACC" FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="5">
+                                        <TextBlock Text="Clamp Status :" FontWeight="Bold" Foreground="#555" Margin="0,0,5,0"/>
+                                        <TextBlock Text="{Binding GripperClampStatusText}" Foreground="#007ACC" FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="5">
+                                        <TextBlock Text="Location :" FontWeight="Bold" Foreground="#555" Margin="0,0,5,0"/>
+                                        <TextBlock Text="{Binding GripperLocationText}" Foreground="Green" FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="5">
+                                        <TextBlock Text="Alarm :" FontWeight="Bold" Foreground="#555" Margin="0,0,5,0"/>
+                                        <TextBlock Text="{Binding GripperAlarmText}" Foreground="{Binding IsAlarmed, Converter={StaticResource BoolToColorConverter}}" FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                </UniformGrid>
+                            </Border>
+
+                            <Viewbox Grid.Row="1" Stretch="Uniform">
+                                <Canvas Width="400" Height="300" Background="#F5F5F5">
+                                    <Line X1="200" Y1="50" X2="200" Y2="250" Stroke="LightGray" StrokeDashArray="2,2"/>
+                                    <TextBlock Text="CENTER" Canvas.Left="180" Canvas.Top="35" FontSize="10" Foreground="Gray"/>
+                                    <Canvas Width="400" Height="300">
+                                        <Canvas.RenderTransform>
+                                            <RotateTransform Angle="{Binding CurrentRotationAngle}" CenterX="200" CenterY="150"/>
+                                        </Canvas.RenderTransform>
+                                        <Rectangle Width="200" Height="80" Fill="#424242" RadiusX="5" RadiusY="5" Canvas.Left="100" Canvas.Top="110"/>
+                                        <TextBlock Text="RGI SERIES" Canvas.Left="165" Canvas.Top="140" Foreground="White" FontWeight="Bold"/>
+
+                                        <Grid Width="40" Height="100" Canvas.Top="100">
+                                            <Rectangle Fill="#757575" RadiusX="3" RadiusY="3"/>
+                                            <Rectangle Width="15" Height="40" Fill="#FFC107" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                                            <TextBlock Text="좌" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,5"/>
+                                            <Grid.RenderTransform>
+                                                <TranslateTransform X="{Binding LeftFingerXOffset}"/>
+                                            </Grid.RenderTransform>
+                                        </Grid>
+
+                                        <Grid Width="40" Height="100" Canvas.Top="100">
+                                            <Rectangle Fill="#757575" RadiusX="3" RadiusY="3"/>
+                                            <Rectangle Width="15" Height="40" Fill="#FFC107" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                            <TextBlock Text="우" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,5"/>
+                                            <Grid.RenderTransform>
+                                                <TranslateTransform X="{Binding RightFingerXOffset}"/>
+                                            </Grid.RenderTransform>
+                                        </Grid>
+                                    </Canvas>
+
+                                    <Border Background="#AAFF0000" CornerRadius="3" Canvas.Left="50" Canvas.Top="130" Width="300" Height="40" 
+                        Visibility="{Binding IsAlarmed, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        <TextBlock Text="EMERGENCY ALARM" Foreground="White" FontSize="20" FontWeight="Black" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </Canvas>
+                            </Viewbox>
+                        </Grid>
+                    </GroupBox>
+                </Grid>
+            </TabItem>
+            <TabItem Header="I/O Control" FontSize="14" FontWeight="Bold">
+                <Grid Margin="15">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
+                        <TextBlock Text="IP Address :" VerticalAlignment="Center" FontWeight="Bold" Margin="0,0,10,0"/>
+                        <TextBox Text="{Binding IoIpAddress}" Width="120" Height="25" VerticalContentAlignment="Center" Margin="0,0,15,0"/>
+
+                        <TextBlock Text="Port :" VerticalAlignment="Center" FontWeight="Bold" Margin="0,0,10,0"/>
+                        <TextBox Text="{Binding IoPort}" Width="60" Height="25" VerticalContentAlignment="Center" Margin="0,0,20,0"/>
+
+                        <Button Content="Connect" Command="{Binding ConnectIoCommand}" Width="90" Height="30" Margin="0,0,10,0"/>
+                        <Button Content="Disconnect" Command="{Binding DisconnectIoCommand}" Width="90" Height="30" Margin="0,0,20,0"/>
+
+                        <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="0,0,20,0"/>
+                        <Button Content="I/O 설정 불러오기" Command="{Binding LoadIoCommand}" Background="#607D8B" Foreground="White" Width="130" Height="30" Margin="0,0,10,0"/>
+                        <Button Content="I/O 설정 저장" Command="{Binding SaveIoCommand}" Background="#FF005C96" Foreground="White" Width="100" Height="30"/>
+                    </StackPanel>
+
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="20"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <GroupBox Grid.Column="0" Header="INPUT (Monitor)" FontWeight="Bold" FontSize="14" BorderBrush="#007ACC">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <ItemsControl Grid.Row="0" ItemsSource="{Binding Inputs}" Margin="10">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" Margin="5,8">
+                                                <Ellipse Width="24" Height="24" Margin="0,0,10,0" Stroke="Gray" StrokeThickness="1">
+                                                    <Ellipse.Style>
+                                                        <Style TargetType="Ellipse">
+                                                            <Setter Property="Fill" Value="#DDDDDD"/>
+                                                            <Style.Triggers>
+                                                                <MultiDataTrigger>
+                                                                    <MultiDataTrigger.Conditions>
+                                                                        <Condition Binding="{Binding IsOn}" Value="True"/>
+                                                                        <Condition Binding="{Binding IsUse}" Value="True"/>
+                                                                    </MultiDataTrigger.Conditions>
+                                                                    <Setter Property="Fill" Value="LimeGreen"/>
+                                                                </MultiDataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Ellipse.Style>
+                                                </Ellipse>
+
+                                                <TextBlock Text="{Binding Number}" Width="40" FontSize="14" VerticalAlignment="Center" Margin="0,0,10,0" IsEnabled="{Binding IsUse}"/>
+                                                <TextBox Text="{Binding Name}" Width="150" Height="26" VerticalContentAlignment="Center" Margin="0,0,10,0" IsEnabled="{Binding IsUse}"/>
+                                                <CheckBox Content="Use" IsChecked="{Binding IsUse}" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,10" 
+                                Visibility="{Binding IsInputPaginationVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <Button Content="◀ 이전" Command="{Binding PrevInputPageCommand}" Width="80" Height="30" Margin="0,0,20,0"/>
+                                    <Button Content="다음 ▶" Command="{Binding NextInputPageCommand}" Width="80" Height="30"/>
+                                </StackPanel>
+                            </Grid>
+                        </GroupBox>
+
+                        <GroupBox Grid.Column="2" Header="OUTPUT (Control)" FontWeight="Bold" FontSize="14" BorderBrush="#D84315">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <ItemsControl Grid.Row="0" ItemsSource="{Binding Outputs}" Margin="10">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" Margin="5,8">
+                                                <Ellipse Width="24" Height="24" Margin="0,0,10,0" Stroke="Gray" StrokeThickness="1">
+                                                    <Ellipse.Style>
+                                                        <Style TargetType="Ellipse">
+                                                            <Setter Property="Fill" Value="#DDDDDD"/>
+                                                            <Style.Triggers>
+                                                                <MultiDataTrigger>
+                                                                    <MultiDataTrigger.Conditions>
+                                                                        <Condition Binding="{Binding IsOn}" Value="True"/>
+                                                                        <Condition Binding="{Binding IsUse}" Value="True"/>
+                                                                    </MultiDataTrigger.Conditions>
+                                                                    <Setter Property="Fill" Value="LimeGreen"/>
+                                                                </MultiDataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Ellipse.Style>
+                                                </Ellipse>
+
+                                                <Button Content="{Binding Number}" Command="{Binding ToggleCommand}" IsEnabled="{Binding IsUse}" Width="45" Height="26" Margin="0,0,10,0">
+                                                    <Button.Template>
+                                                        <ControlTemplate TargetType="Button">
+                                                            <Border Background="Transparent" CornerRadius="3" BorderBrush="Transparent" BorderThickness="1">
+                                                                <TextBlock Text="{TemplateBinding Content}" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center" TextDecorations="Underline" Cursor="Hand" IsEnabled="{Binding IsUse}"/>
+                                                            </Border>
+                                                        </ControlTemplate>
+                                                    </Button.Template>
+                                                </Button>
+
+                                                <TextBox Text="{Binding Name}" Width="150" Height="26" VerticalContentAlignment="Center" Margin="0,0,10,0" IsEnabled="{Binding IsUse}"/>
+                                                <CheckBox Content="Use" IsChecked="{Binding IsUse}" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,10" 
+                                Visibility="{Binding IsOutputPaginationVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <Button Content="◀ 이전" Command="{Binding PrevOutputPageCommand}" Width="80" Height="30" Margin="0,0,20,0"/>
+                                    <Button Content="다음 ▶" Command="{Binding NextOutputPageCommand}" Width="80" Height="30"/>
+                                </StackPanel>
+                            </Grid>
+                        </GroupBox>
+                    </Grid>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="AZ 모터 제어" FontSize="14" FontWeight="Bold">
+                <Grid Margin="15">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10" VerticalAlignment="Center">
+                        <TextBlock Text="COM Port:" VerticalAlignment="Center" FontWeight="Bold" Margin="0,0,8,0" FontSize="13"/>
+                        <ComboBox ItemsSource="{Binding AvailablePorts}" SelectedItem="{Binding SelectedPort}" Width="85" Height="28" VerticalContentAlignment="Center"
+                                  IsEnabled="{Binding IsConnected, Converter={StaticResource InverseBoolConverter}}" Margin="0,0,4,0"/>
+                        <Button Content="↻" Command="{Binding RefreshPortsCommand}" Width="28" Height="28" IsEnabled="{Binding IsConnected, Converter={StaticResource InverseBoolConverter}}" ToolTip="포트 스캔" Margin="0,0,15,0"/>
+
+                        <Button Command="{Binding ConnectCommand}" Width="100" Height="28" Margin="0,0,15,0">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Content" Value="Connect"/>
+                                    <Setter Property="Background" Value="#E3F2FD"/>
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                            <Setter Property="Content" Value="Disconnect"/>
+                                            <Setter Property="Background" Value="#FFCDD2"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                        <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="0,0,15,0"/>
+
+                        <Button Command="{Binding HomeAllCommand}" Width="120" Height="28" Margin="0,0,15,0">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Content" Value="ALL HOME"/>
+                                    <Setter Property="Background" Value="#E0E0E0"/>
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsAllInitialized}" Value="True">
+                                            <Setter Property="Background" Value="#81C784"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                        
+                        <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="0,0,15,0"/>
+
+                        <Button Content="ALL ALARM RESET" Command="{Binding ResetAlarmCommand}" Background="#F44336" Foreground="White" FontWeight="Bold" Width="130" Height="28" Margin="0,0,15,0"
+                                Visibility="{Binding IsAlarmed, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                        <Button Content="전체 파라미터 불러오기" Command="{Binding LoadParametersCommand}" Background="#607D8B" Foreground="White" FontWeight="Bold" Width="150" Height="28" Margin="0,0,10,0"/>
+
+                        <Button Content="전체 파라미터 저장" Command="{Binding SaveParametersCommand}" Background="#009688" Foreground="White" FontWeight="Bold" Width="130" Height="28"/>
+                    </StackPanel>
+
+                    <TabControl Grid.Row="1" ItemsSource="{Binding MotionAxes}" SelectionChanged="AxisTabControl_SelectionChanged" Margin="5,10,5,5" Background="Transparent" BorderThickness="0">
+                        <TabControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding AxisName}" FontWeight="SemiBold" Padding="10,5" FontSize="13"/>
+                            </DataTemplate>
+                        </TabControl.ItemTemplate>
+
+                        <TabControl.ContentTemplate>
+                            <DataTemplate>
+                                <Border Background="#F9F9F9" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="3" Padding="10">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Padding="10">
+                                        <StackPanel>
+
+                                            <Grid Margin="0,0,0,15">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <Button Grid.Column="0" Command="{Binding HomeCommand}" Width="85" Height="35" Margin="0,0,20,0" FontWeight="Bold">
+                                                    <Button.Style>
+                                                        <Style TargetType="Button">
+                                                            <Setter Property="Content" Value="HOME"/>
+                                                            <Setter Property="Background" Value="#E0E0E0"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsInitialized}" Value="True">
+                                                                    <Setter Property="Background" Value="#81C784"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Button.Style>
+                                                </Button>
+
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,25,0">
+                                                        <Ellipse Width="14" Height="14" Stroke="#9E9E9E">
+                                                            <Ellipse.Style>
+                                                                <Style TargetType="Ellipse">
+                                                                    <Setter Property="Fill" Value="#E0E0E0"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding IsInitialized}" Value="True">
+                                                                            <Setter Property="Fill" Value="#4CAF50"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Ellipse.Style>
+                                                        </Ellipse>
+                                                        <TextBlock Text="INIT" FontSize="12" FontWeight="SemiBold" Foreground="#555" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,25,0">
+                                                        <Ellipse Width="14" Height="14" Stroke="#9E9E9E">
+                                                            <Ellipse.Style>
+                                                                <Style TargetType="Ellipse">
+                                                                    <Setter Property="Fill" Value="#E0E0E0"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding IsMoving}" Value="True">
+                                                                            <Setter Property="Fill" Value="#FF9800"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Ellipse.Style>
+                                                        </Ellipse>
+                                                        <TextBlock Text="MOVE" FontSize="12" FontWeight="SemiBold" Foreground="#555" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                    <TextBlock Text="알람 상태:" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,5,0" Foreground="#555"/>
+                                                    <Ellipse Width="15" Height="15" Margin="0,0,15,0" Stroke="#9E9E9E" StrokeThickness="1">
+                                                        <Ellipse.Style>
+                                                            <Style TargetType="Ellipse">
+                                                                <Setter Property="Fill" Value="LimeGreen"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsAlarmed}" Value="True">
+                                                                        <Setter Property="Fill" Value="Red"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Ellipse.Style>
+                                                    </Ellipse>
+                                                </StackPanel>
+                                                
+                                                <Button Grid.Column="2" Command="{Binding ResetAlarmCommand}" Content="AXIS ALARM RESET" 
+            Foreground="White" FontWeight="Bold" Width="140" Height="35"
+            IsEnabled="{Binding IsAlarmed}">
+                                                    <Button.Style>
+                                                        <Style TargetType="Button">
+                                                            <Setter Property="Background" Value="#FFCDD2"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsAlarmed}" Value="True">
+                                                                    <Setter Property="Background" Value="#FF5252"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Button.Style>
+                                                </Button>
+
+                                            </Grid>
+
+                                            <Separator Margin="0,5,0,15"/>
+
+                                            <Grid Margin="0,0,0,15">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="현재 위치: " FontSize="16" VerticalAlignment="Center" FontWeight="Normal"/>
+                                                    <TextBlock Text="{Binding CurrentPosition}" FontSize="20" FontWeight="Bold" Foreground="Blue" VerticalAlignment="Center" MinWidth="80" TextAlignment="Right"/>
+
+                                                    <Button Content="위치값 Set" Command="{Binding SetPositionValueCommand}" Width="80" Height="28" Margin="20,0,15,0" Background="#9C27B0" Foreground="White" FontWeight="Bold" ToolTip="현재 위치를 선택된 포지션에 입력합니다."/>
+
+                                                    <TextBlock Text="{Binding StatusMessage}" Foreground="{Binding StatusColor}" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                                </StackPanel>
+                                            </Grid>
+                                            <Grid Margin="0,0,0,20">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="40"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <StackPanel Grid.Column="0">
+                                                    <TextBlock Text="절대 위치 이동 (Absolute Move)" FontWeight="Bold" Margin="0,0,0,10" Foreground="#555"/>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock Text="Target: " VerticalAlignment="Center" FontWeight="Normal"/>
+                                                        <TextBox Text="{Binding TargetPosition}" Width="90" Height="30" Margin="5,0,10,0" VerticalContentAlignment="Center"/>
+                                                        <Button Content="이동 (MOVE)" Command="{Binding MoveCommand}" Width="100" Height="30" Background="#4CAF50" Foreground="White" FontWeight="Bold"/>
+                                                        <Button Content="정지 (STOP)" Command="{Binding StopCommand}" Width="100" Height="30" Margin="10,0,0,0" Background="#FFCDD2" Foreground="#D84315" FontWeight="Bold"/>
+                                                    </StackPanel>
+                                                </StackPanel>
+
+                                                <StackPanel Grid.Column="2">
+                                                    <TextBlock Text="JOG 제어 (버튼을 누르고 있으면 이동)" FontWeight="Bold" Margin="0,0,0,10" Foreground="#555"/>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Button Content="◀ Rev (-)" PreviewMouseDown="BtnJogRev_PreviewMouseDown" PreviewMouseUp="BtnJogRev_PreviewMouseUp" Width="80" Height="40" />
+
+                                                        <Button Content="Fwd (+) ▶" PreviewMouseDown="BtnJogFwd_PreviewMouseDown" PreviewMouseUp="BtnJogFwd_PreviewMouseUp" Width="80" Height="40" Margin="10,0,0,0"/>
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </Grid>
+
+                                            <Separator Margin="0,5,0,15"/>
+
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,10">
+                                                <TextBlock Text="{Binding CustomAxisName, StringFormat='{}선택된 [{0}] 축 데이터 :'}" VerticalAlignment="Center" Margin="0,0,10,0" FontWeight="Bold" Foreground="#009688"/>
+                                                <Button Content="현재 축만 개별 저장" Command="{Binding SaveAxisCommand}" Background="#FF9800" Foreground="White" FontWeight="Bold" Width="140" Height="30" ToolTip="현재 선택된 축의 파라미터와 포지션 정보만 JSON 파일에 업데이트합니다."/>
+                                            </StackPanel>
+
+                                            <TabControl Margin="0,0,0,10" Background="Transparent" BorderBrush="#E0E0E0" BorderThickness="1">
+
+                                                <TabItem Header="모터 파라미터 설정" FontSize="13" FontWeight="Bold">
+                                                    <StackPanel Margin="15">
+                                                        <TextBlock Text="모터 파라미터 및 리밋 설정 (Parameter &amp; Limit)" FontWeight="Bold" Margin="0,0,0,15" Foreground="#555"/>
+
+                                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                                                            <TextBlock Text="Axis 이름:" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="#555" FontWeight="Bold"/>
+                                                            <TextBox Text="{Binding CustomAxisName}" Width="160" Height="28" VerticalContentAlignment="Center"/>
+                                                        </StackPanel>
+                                                        <Grid>
+                                                            <Grid.RowDefinitions>
+                                                                <RowDefinition Height="Auto"/>
+                                                                <RowDefinition Height="Auto"/>
+                                                                <RowDefinition Height="Auto"/>
+                                                            </Grid.RowDefinitions>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                            </Grid.ColumnDefinitions>
+
+                                                            <TextBlock Grid.Row="0" Grid.Column="0" Text="이동 속도:" VerticalAlignment="Center" Margin="0,0,5,10" Foreground="#555"/>
+                                                            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding MoveSpeed}" Width="80" Height="28" Margin="0,0,30,10" VerticalContentAlignment="Center"/>
+                                                            <TextBlock Grid.Row="0" Grid.Column="2" Text="이동 가감속:" VerticalAlignment="Center" Margin="0,0,5,10" Foreground="#555"/>
+                                                            <TextBox Grid.Row="0" Grid.Column="3" Text="{Binding MoveAccelDecel}" Width="80" Height="28" Margin="0,0,15,10" VerticalContentAlignment="Center"/>
+
+                                                            <TextBlock Grid.Row="1" Grid.Column="0" Text="JOG 속도:" VerticalAlignment="Center" Margin="0,0,5,10" Foreground="#555"/>
+                                                            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding JogSpeed}" Width="80" Height="28" Margin="0,0,30,10" VerticalContentAlignment="Center"/>
+                                                            <TextBlock Grid.Row="1" Grid.Column="2" Text="JOG 가감속:" VerticalAlignment="Center" Margin="0,0,5,10" Foreground="#555"/>
+                                                            <TextBox Grid.Row="1" Grid.Column="3" Text="{Binding JogAccelDecel}" Width="80" Height="28" Margin="0,0,15,10" VerticalContentAlignment="Center"/>
+
+                                                            <TextBlock Grid.Row="2" Grid.Column="0" Text="- Limit:" VerticalAlignment="Center" Margin="0,0,5,0" Foreground="#555"/>
+                                                            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding NegativeLimit}" Width="80" Height="28" Margin="0,0,30,0" VerticalContentAlignment="Center"/>
+                                                            <TextBlock Grid.Row="2" Grid.Column="2" Text="+ Limit:" VerticalAlignment="Center" Margin="0,0,5,0" Foreground="#555"/>
+                                                            <StackPanel Grid.Row="2" Grid.Column="3" Orientation="Horizontal">
+                                                                <TextBox Text="{Binding PositiveLimit}" Width="80" Height="28" Margin="0,0,15,0" VerticalContentAlignment="Center"/>
+                                                                <Button Content="리밋 설정 적용" Command="{Binding SetLimitCommand}" Width="100" Height="28" Background="#2196F3" Foreground="White" FontWeight="Bold"/>
+                                                            </StackPanel>
+                                                        </Grid>
+                                                    </StackPanel>
+                                                </TabItem>
+
+                                                <TabItem Header="포지션 티칭 (16 Points)" FontSize="13" FontWeight="Bold">
+                                                    <StackPanel Margin="15">
+                                                        <TextBlock Text="포지션 설정 (Teaching Positions 0~15)" FontWeight="Bold" Margin="0,0,0,15" Foreground="#555"/>
+
+                                                        <ItemsControl ItemsSource="{Binding TargetPositions}">
+                                                            <ItemsControl.ItemsPanel>
+                                                                <ItemsPanelTemplate>
+                                                                    <UniformGrid Columns="2" HorizontalAlignment="Left" />
+                                                                </ItemsPanelTemplate>
+                                                            </ItemsControl.ItemsPanel>
+
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <StackPanel Orientation="Horizontal" Margin="0,0,30,8">
+                                                                        <CheckBox IsChecked="{Binding IsUsed}" VerticalAlignment="Center" Margin="0,0,10,0" ToolTip="사용 여부"/>
+
+                                                                        <StackPanel Orientation="Horizontal" IsEnabled="{Binding IsUsed}">
+                                                                            <TextBlock Text="{Binding PositionNumber, StringFormat='No.{0:D2}'}" 
+                                       FontWeight="Bold" Width="45" VerticalAlignment="Center" Foreground="#1976D2" Margin="0,0,5,0"/>
+
+                                                                            <TextBox Text="{Binding Name}" Width="90" Height="28" Margin="0,0,15,0" VerticalContentAlignment="Center">
+                                                                                <TextBox.Style>
+                                                                                    <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+                                                                                        <Setter Property="Background" Value="White"/>
+                                                                                        <Style.Triggers>
+                                                                                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                                                                <Setter Property="Background" Value="LightBlue"/>
+                                                                                                <Setter Property="FontWeight" Value="Bold"/>
+                                                                                            </DataTrigger>
+                                                                                        </Style.Triggers>
+                                                                                    </Style>
+                                                                                </TextBox.Style>
+                                                                                <TextBox.InputBindings>
+                                                                                    <MouseBinding MouseAction="LeftDoubleClick" 
+                                                  Command="{Binding DataContext.DoubleClickPositionCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}"/>
+                                                                                </TextBox.InputBindings>
+                                                                            </TextBox>
+
+                                                                            <TextBlock Text="위치값:" VerticalAlignment="Center" Margin="0,0,5,0" Foreground="#555"/>
+                                                                            <TextBox Text="{Binding Value}" Width="85" Height="28" Margin="0,0,10,0" VerticalContentAlignment="Center"/>
+                                                                        </StackPanel>
+                                                                    </StackPanel>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </StackPanel>
+                                                </TabItem>
+                                            </TabControl>
+                                        </StackPanel>
+                                    </ScrollViewer>
+                                </Border>
+                            </DataTemplate>
+                        </TabControl.ContentTemplate>
+                    </TabControl>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>
