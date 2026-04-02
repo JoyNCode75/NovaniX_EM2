@@ -257,10 +257,6 @@ namespace NovaniX_EM2.Controllers
                     }
                 }
 
-                // Load/Unload Cap Z축 초기화
-                await MoveAxisToSdDataAsync(6, 1, CancellationToken.None); // SlaveId 6번 축(Sampler Cap Load Z)의 SD Data No.1 위치
-                await MoveAxisToSdDataAsync(7, 1, CancellationToken.None); // SlaveId 7번 축(Sampler Cap UnLoad Z)의 SD Data No.1 위치
-
                 CurrentState = MachineState.Idle;
                 CurrentTaskName = "장비 초기화 완료";
             }
