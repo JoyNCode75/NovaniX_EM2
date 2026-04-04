@@ -217,7 +217,7 @@ namespace NovaniX_EM2.Devices
                 // [주의] 아래 Range 값들은 일반적인 AZ 모터 스펙을 기준으로 작성되었습니다.
                 // 실제 사용하시는 장비 세팅에 맞춰 범위를 타이트하게 조절해 주시면 더 확실하게 쓰레기 값을 걸러낼 수 있습니다.
 
-                // 1) Operation Mode (운전 방식: 보통 0 ~ 20 내외)
+                // 1) Operation Mode (운전 방식: 보통 0 ~ 20 내외) 의심되는 부분
                 if (result.mode < 0 || result.mode > 20) isValid = false;
 
                 // 2) Position (위치값: -2,147,483,648 ~ 2,147,483,647 이지만, 쓰레기값 방지를 위해 실사용 최대 범위로 제한 추천)
@@ -226,9 +226,9 @@ namespace NovaniX_EM2.Devices
                 // 3) Velocity (이동 속도: 1000 ~ 10,000 Hz)
                 if (result.vel < 1000 || result.vel > 10000) isValid = false;
 
-                // 4) Accel / Decel (가감속: 100 ~ 10,000)
-                if (result.acc < 100 || result.acc > 10000) isValid = false;
-                if (result.dec < 100 || result.dec > 10000) isValid = false;
+                // 4) Accel / Decel (가감속: 1 ~ 10,000000)
+                if (result.acc < 1 || result.acc > 10000000) isValid = false;
+                if (result.dec < 1 || result.dec > 10000000) isValid = false;
 
                 // 5) Operating Current (운전 전류: 0 ~ 1000, 0.1% 단위)
 //                if (result.opt < 0 || result.opt > 1000) isValid = false;

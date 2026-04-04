@@ -66,18 +66,31 @@
                            Foreground="White" FontSize="20" FontWeight="Bold" 
                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
-                <TextBlock Text="{Binding CurrentDateTime}" 
-                           Foreground="White" FontSize="16" FontWeight="SemiBold" 
-                           HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,20,0"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,20,0">
+                    <TextBlock Text="{Binding CurrentDateTime}" 
+               Foreground="White" FontSize="16" FontWeight="SemiBold" 
+               Margin="0,0,15,0" VerticalAlignment="Center"/>
+
+                    <Button x:Name="BtnToggleMenu" Content="◀" FontSize="20" Foreground="White" Background="Transparent" 
+            BorderThickness="0" Cursor="Hand" VerticalAlignment="Center" Click="BtnToggleMenu_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="Transparent">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </StackPanel>
             </Grid>
         </Border>
 
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="230"/>
+                <ColumnDefinition x:Name="MenuColumn" Width="230"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-
+            
             <Border Grid.Column="0" Background="#2C3E50">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -85,45 +98,48 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <ListBox x:Name="MenuListBox" Grid.Row="0" Background="Transparent" BorderThickness="0" SelectedIndex="0" ItemContainerStyle="{StaticResource MenuListItemStyle}">
+                    <ListBox x:Name="MenuListBox" Grid.Row="0" Background="Transparent" BorderThickness="0" SelectedIndex="0" 
+                             ItemContainerStyle="{StaticResource MenuListItemStyle}" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
 
                         <ListBoxItem>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="🖥️" Margin="0,0,10,0" FontSize="16"/>
-                                <TextBlock Text="Main Control" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="TxtMenuMain" Text="Main Control" VerticalAlignment="Center"/>
                             </StackPanel>
                         </ListBoxItem>
 
                         <ListBoxItem>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="🧬" Margin="0,0,10,0" FontSize="16"/>
-                                <TextBlock Text="Environment Control" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="TxtMenuBio" Text="Environment Control" VerticalAlignment="Center"/>
                             </StackPanel>
                         </ListBoxItem>
 
                         <ListBoxItem>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="⚙️" Margin="0,0,10,0" FontSize="16"/>
-                                <TextBlock Text="Motion Control" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="TxtMenuMotion" Text="Motion Control" VerticalAlignment="Center"/>
                             </StackPanel>
                         </ListBoxItem>
 
                         <ListBoxItem>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="🧩" Margin="0,0,10,0" FontSize="16"/>
-                                <TextBlock Text="Etc Control" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="TxtMenuEtc" Text="Etc Control" VerticalAlignment="Center"/>
                             </StackPanel>
                         </ListBoxItem>
 
                         <ListBoxItem>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="🛠️" Margin="0,0,10,0" FontSize="16"/>
-                                <TextBlock Text="System Parameter" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="TxtMenuSys" Text="System Parameter" VerticalAlignment="Center"/>
                             </StackPanel>
                         </ListBoxItem>
 
                     </ListBox>
-                    <Button Grid.Row="1" Content="⏻ EXIT" Background="#E74C3C" Foreground="White" FontSize="16" FontWeight="Bold" Height="55" BorderThickness="0" Cursor="Hand" Click="BtnExit_Click">
+
+                    <Button x:Name="BtnExit" Grid.Row="1" Content="⏻ EXIT" Background="#E74C3C" Foreground="White" 
+                            FontSize="16" FontWeight="Bold" Height="55" BorderThickness="0" Cursor="Hand" Click="BtnExit_Click">
                         <Button.Style>
                             <Style TargetType="Button">
                                 <Style.Triggers>

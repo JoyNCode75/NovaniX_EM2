@@ -37,6 +37,19 @@ namespace NovaniX_EM2.Controllers
         Error
     }
 
+    // --- 축(Axis) 번호 정의 구조체 ---
+    public struct MotorAxis
+    {
+        public const int MAIN_T_AXIS = 1;
+        public const int MAIN_Z_AXIS = 2;
+        public const int UNLOAD_PETRI_Z_AXIS = 3;  // 기존 코드 기준 3번
+        public const int LOAD_PETRI_Z_AXIS = 4;    // 기존 코드 기준 4번
+        public const int QR_TURN_TABLE_AXIS = 5;
+        public const int LOAD_SAMPLERCAP_Z_AXIS = 6;
+        public const int UNLOAD_SAMPLERCAP_Z_AXIS = 7;
+        public const int SAMPLERCAP_DOOR = 8;
+    }
+
     // --- 공정 제어 전담 클래스 ---
     public class MainTaskController : INotifyPropertyChanged
     {
@@ -243,8 +256,8 @@ namespace NovaniX_EM2.Controllers
                 await MovePetriZAxisInitTaskAsync(CancellationToken.None);
 
                 // Load/Unload Sampler Cap Z축 초기화
-                await MoveAxisToSdDataAsync(6, 1, CancellationToken.None); // SlaveId 6번 축(Sampler Cap Load Z)의 SD Data No.1 위치
-                await MoveAxisToSdDataAsync(7, 1, CancellationToken.None); // SlaveId 7번 축(Sampler Cap UnLoad Z)의 SD Data No.1 위치
+                await MoveAxisToSdDataAsync(MotorAxis.LOAD_SAMPLERCAP_Z_AXIS, 1, CancellationToken.None); // SlaveId 6번 축(Sampler Cap Load Z)의 SD Data No.1 위치
+                await MoveAxisToSdDataAsync(MotorAxis.UNLOAD_SAMPLERCAP_Z_AXIS, 1, CancellationToken.None); // SlaveId 7번 축(Sampler Cap UnLoad Z)의 SD Data No.1 위치
 
                 // ★ 추가: 입력된 수량(InitialPetriLoadCount)에 따라 Load Z축(4번 축) 보상 이동 
                 int emptySlots = 14 - InitialPetriLoadCount;
@@ -252,7 +265,7 @@ namespace NovaniX_EM2.Controllers
                 {
                     for (int i = 0; i < emptySlots; i++)
                     {
-                        await MoveAxisToSdDataAsync(4, 2, CancellationToken.None); // SD Data No.2 반복 호출
+                        await MoveAxisToSdDataAsync(MotorAxis.LOAD_PETRI_Z_AXIS, 2, CancellationToken.None); // SD Data No.2 반복 호출
                     }
                 }
 
@@ -386,8 +399,8 @@ namespace NovaniX_EM2.Controllers
                     await RunSamplerCapLoadingTaskAsync(token);
                     break;
                 case ProcessStep.Air_Sampling:
-                    await Task.Delay(3000, token);
-                    //                   await RunAirSamplingTaskAsync(token);
+                    //await Task.Delay(3000, token);
+                    await RunAirSamplingTaskAsync(token);
                     break;
                 case ProcessStep.SamplerCap_Unloading:
                     await RunSamplerCapUnloadingTaskAsync(token);
@@ -401,7 +414,7 @@ namespace NovaniX_EM2.Controllers
                     // ★ Petri_LoadCount 소진 시 팝업 로직 처리
                     if (Petri_LoadCount <= 0)
                     {
-                        await MoveAxisToSdDataAsync(4, 0, token); // 대기 위치로 이동
+                        await MoveAxisToSdDataAsync(MotorAxis.LOAD_PETRI_Z_AXIS, 0, token); // 대기 위치로 이동
 
                         bool isResumed = false;
 
@@ -428,7 +441,7 @@ namespace NovaniX_EM2.Controllers
                         {
                             for (int i = 0; i < emptySlots; i++)
                             {
-                                await MoveAxisToSdDataAsync(4, 2, token);
+                                await MoveAxisToSdDataAsync(MotorAxis.LOAD_PETRI_Z_AXIS, 2, token);
                             }
                         }
                     }
@@ -514,18 +527,18 @@ namespace NovaniX_EM2.Controllers
         {
             if (Step == 1)
             {
-                await MoveAxisToSdDataAsync(2, 0, token);
-                await MoveAxisToSdDataAsync(1, 2, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_Z_AXIS, 0, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_T_AXIS, 2, token);
             }
             else if (Step == 2)
             {
-                //                await MoveAxisToSdDataAsync(2, 2, token);
-                await MoveAxisToSdDataAsync(1, 2, token);
+                //                await MoveAxisToSdDataAsync(MotorAxis.MAIN_Z_AXIS, 2, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_T_AXIS, 2, token);
             }
             else
             {
-                await MoveAxisToSdDataAsync(2, 0, token);
-                await MoveAxisToSdDataAsync(1, 2, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_Z_AXIS, 0, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_T_AXIS, 2, token);
             }
         }
 
@@ -533,45 +546,45 @@ namespace NovaniX_EM2.Controllers
         {
             if (Step == 1)
             {
-                await MoveAxisToSdDataAsync(2, 0, token);
-                await MoveAxisToSdDataAsync(1, 5, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_Z_AXIS, 0, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_T_AXIS, 5, token);
             }
             else if (Step == 2)
             {
-                //                await MoveAxisToSdDataAsync(2, 5, token);
-                await MoveAxisToSdDataAsync(1, 5, token);
+                //                await MoveAxisToSdDataAsync(MotorAxis.MAIN_Z_AXIS, 5, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_T_AXIS, 5, token);
             }
             else if (Step == 3)
             {
-                //                await MoveAxisToSdDataAsync(2, 6, token);
-                await MoveAxisToSdDataAsync(1, 5, token);
+                //                await MoveAxisToSdDataAsync(MotorAxis.MAIN_Z_AXIS, 6, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_T_AXIS, 5, token);
             }
             else
             {
-                await MoveAxisToSdDataAsync(2, 0, token);
-                await MoveAxisToSdDataAsync(1, 5, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_Z_AXIS, 0, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_T_AXIS, 5, token);
             }
         }
 
         private async Task MoveQRTableTurnTaskAsync(CancellationToken token, bool CheckDone = false)
         {
             if (CheckDone == true)
-                await MoveAxisToSdDataAsync(5, 0, token, CheckDone);
+                await MoveAxisToSdDataAsync(MotorAxis.QR_TURN_TABLE_AXIS, 0, token, CheckDone);
             else
-                await MoveAxisToSdDataAsync(5, 1, token, CheckDone);
+                await MoveAxisToSdDataAsync(MotorAxis.QR_TURN_TABLE_AXIS, 1, token, CheckDone);
         }
 
         private async Task MoveQRTableToSamplerTaskAsync(int Step, CancellationToken token)
         {
             if (Step == 1)
             {
-                await MoveAxisToSdDataAsync(2, 0, token);
-                await MoveAxisToSdDataAsync(1, 6, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_Z_AXIS, 0, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_T_AXIS, 6, token);
             }
             else if (Step == 2)
             {
-                await MoveAxisToSdDataAsync(1, 6, token);
-                //                await MoveAxisToSdDataAsync(2, 6, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_T_AXIS, 6, token);
+                //                await MoveAxisToSdDataAsync(MotorAxis.MAIN_Z_AXIS, 6, token);
             }
             else if (Step == 3)
             {
@@ -579,14 +592,14 @@ namespace NovaniX_EM2.Controllers
             }
             else if (Step == 4)
             {
-                await MoveAxisToSdDataAsync(2, 0, token);
-                await MoveAxisToSdDataAsync(1, 5, token);
-                await MoveAxisTargetPosChangeAsync(2, 5, 17200, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_Z_AXIS, 0, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_T_AXIS, 5, token);
+//                await MoveAxisTargetPosChangeAsync(MotorAxis.MAIN_Z_AXIS, 5, 17200, token);
             }
             else
             {
-                await MoveAxisToSdDataAsync(2, 0, token);
-                await MoveAxisToSdDataAsync(1, 5, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_Z_AXIS, 0, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_T_AXIS, 5, token);
             }
         }
 
@@ -594,22 +607,23 @@ namespace NovaniX_EM2.Controllers
         {
             if (Step == 1)
             {
-                await MoveAxisToSdDataAsync(2, 0, token);
-                await MoveAxisToSdDataAsync(1, 3, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_Z_AXIS, 0, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_T_AXIS, 3, token);
             }
             else if (Step == 2)
             {
-                //                await MoveAxisToSdDataAsync(2, 3, token);
+                //                await MoveAxisToSdDataAsync(MotorAxis.MAIN_Z_AXIS, 3, token);
+                await Task.Delay(100, token);
             }
             else if (Step == 3)
             {
-                await MoveAxisToSdDataAsync(1, 6, token);
-                //                await MoveAxisToSdDataAsync(2, 7, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_T_AXIS, 6, token);
+                //                await MoveAxisToSdDataAsync(MotorAxis.MAIN_Z_AXIS, 7, token);
             }
             else
             {
-                await MoveAxisToSdDataAsync(2, 0, token);
-                await MoveAxisToSdDataAsync(1, 0, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_Z_AXIS, 0, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_T_AXIS, 0, token);
             }
         }
 
@@ -617,35 +631,35 @@ namespace NovaniX_EM2.Controllers
         {
             if (Step == 1)
             {
-                await MoveAxisToSdDataAsync(1, 6, token);
-                //                await MoveAxisToSdDataAsync(2, 7, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_T_AXIS, 6, token);
+                //                await MoveAxisToSdDataAsync(MotorAxis.MAIN_Z_AXIS, 7, token);
             }
             else if (Step == 2)
             {
-                await MoveAxisToSdDataAsync(2, 0, token);
-                await MoveAxisToSdDataAsync(1, 4, token);
-                //                await MoveAxisToSdDataAsync(2, 4, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_Z_AXIS, 0, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_T_AXIS, 4, token);
+                //                await MoveAxisToSdDataAsync(MotorAxis.MAIN_Z_AXIS, 4, token);
             }
             else if (Step == 3)
             {
-                await MoveAxisToSdDataAsync(2, 0, token);
-                await MoveAxisToSdDataAsync(1, 4, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_Z_AXIS, 0, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_T_AXIS, 4, token);
             }
             else if (Step == 4)
             {
-                await MoveAxisToSdDataAsync(1, 4, token);
-                //                await MoveAxisToSdDataAsync(2, 4, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_T_AXIS, 4, token);
+                //                await MoveAxisToSdDataAsync(MotorAxis.MAIN_Z_AXIS, 4, token);
             }
             else if (Step == 5)
             {
-                await MoveAxisToSdDataAsync(2, 0, token);
-                await MoveAxisToSdDataAsync(1, 3, token);
-                //                await MoveAxisToSdDataAsync(2, 3, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_Z_AXIS, 0, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_T_AXIS, 3, token);
+                //                await MoveAxisToSdDataAsync(MotorAxis.MAIN_Z_AXIS, 3, token);
             }
             else
             {
-                await MoveAxisToSdDataAsync(2, 0, token);
-                await MoveAxisToSdDataAsync(1, 5, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_Z_AXIS, 0, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_T_AXIS, 5, token);
             }
         }
 
@@ -653,54 +667,54 @@ namespace NovaniX_EM2.Controllers
         {
             if (Step == 1)
             {
-                await MoveAxisToSdDataAsync(2, 0, token);
-                await MoveAxisToSdDataAsync(1, 5, token);
-                //                await MoveAxisTargetPosChangeAsync(2, 5, 17200, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_Z_AXIS, 0, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_T_AXIS, 5, token);
+                //                await MoveAxisTargetPosChangeAsync(MotorAxis.MAIN_Z_AXIS, 5, 17200, token);
             }
             else if (Step == 2)
             {
-                await MoveAxisToSdDataAsync(2, 0, token);
-                await MoveAxisToSdDataAsync(1, 6, token);
-                //                await MoveAxisTargetPosChangeAsync(2, 6, 7100, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_Z_AXIS, 0, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_T_AXIS, 6, token);
+                //                await MoveAxisTargetPosChangeAsync(MotorAxis.MAIN_Z_AXIS, 6, 7100, token);
             }
             else if (Step == 3)
             {
-                //                await MoveAxisToSdDataAsync(2, 6, token);
+                //                await MoveAxisToSdDataAsync(MotorAxis.MAIN_Z_AXIS, 6, token);
             }
             else if (Step == 4)
             {
-                await MoveAxisToSdDataAsync(2, 0, token);
-                await MoveAxisToSdDataAsync(1, 1, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_Z_AXIS, 0, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_T_AXIS, 1, token);
             }
             else if (Step == 5)
             {
-                //                await MoveAxisToSdDataAsync(2, 1, token);
-                await MoveAxisToSdDataAsync(1, 1, token);
+                //                await MoveAxisToSdDataAsync(MotorAxis.MAIN_Z_AXIS, 1, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_T_AXIS, 1, token);
             }
             else if (Step == 6)
             {
-                await MoveAxisToSdDataAsync(2, 0, token);
-                await MoveAxisToSdDataAsync(1, 0, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_Z_AXIS, 0, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_T_AXIS, 0, token);
             }
             else
             {
-                await MoveAxisToSdDataAsync(2, 0, token);
-                await MoveAxisToSdDataAsync(1, 2, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_Z_AXIS, 0, token);
+                await MoveAxisToSdDataAsync(MotorAxis.MAIN_T_AXIS, 2, token);
             }
         }
 
         private async Task MoveLoad_UnloadStepTaskAsync(CancellationToken token)
         {
-//            await MoveAxisToSdDataAsync(3, 2, token);
-//            await MoveAxisToSdDataAsync(4, 2, token);
-            await MoveAxisStepChangeAsync(3, 2, token);
-            await MoveAxisStepChangeAsync(4, 2, token);
+//            await MoveAxisToSdDataAsync(MotorAxis.UNLOAD_PETRI_Z_AXIS, 2, token);
+//            await MoveAxisToSdDataAsync(MotorAxis.LOAD_PETRI_Z_AXIS, 2, token);
+            await MoveAxisStepChangeAsync(MotorAxis.UNLOAD_PETRI_Z_AXIS, 2, token);
+            await MoveAxisStepChangeAsync(MotorAxis.LOAD_PETRI_Z_AXIS, 2, token);
         }
 
         private async Task MovePetriZAxisInitTaskAsync(CancellationToken token)
         {
-            await MoveAxisToSdDataAsync(3, 1, token); // SlaveId 3번 축(Unload Petri Z)의 SD Data No.1 위치
-            await MoveAxisToSdDataAsync(4, 0, token); // SlaveId 4번 축(Load Petri Z)의 SD Data No.0 위치
+            await MoveAxisToSdDataAsync(MotorAxis.UNLOAD_PETRI_Z_AXIS, 1, token); // SlaveId 3번 축(Unload Petri Z)의 SD Data No.1 위치
+            await MoveAxisToSdDataAsync(MotorAxis.LOAD_PETRI_Z_AXIS, 0, token); // SlaveId 4번 축(Load Petri Z)의 SD Data No.0 위치
         }
 
         private async Task WaitForAxisCompletionAsync(OrientalAzMotorDevice motor, int targetPosition, CancellationToken token)
@@ -884,7 +898,7 @@ namespace NovaniX_EM2.Controllers
             CurrentTaskName = "Sampler Cap Loading ▶▶▶ CAP Unit 이동(Pick Up & Move)";
             await MoveSamplerCapLoadTaskAsync(1, token);
 
-            //            await MoveSamplerCapLoadTaskAsync(2, token);
+            await MoveSamplerCapLoadTaskAsync(2, token);
             await SetGripperCloseAsync(token);
             await MoveSamplerCapLoadTaskAsync(1, token);
 

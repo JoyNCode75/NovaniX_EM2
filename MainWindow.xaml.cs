@@ -21,12 +21,6 @@ namespace NovaniX_EM2
             InitializeComponent();
         }
 
-        // ▼ 추가할 코드: Exit 버튼 클릭 시 프로그램 종료 ▼
-        private void BtnExit_Click(object sender, System.Windows.RoutedEventArgs e)
-        {
-            System.Windows.Application.Current.Shutdown();
-        }
-
         // ▼ 추가된 코드: 로고 이미지를 더블 클릭했을 때만 최대화/복구 기능 수행 ▼
         private void Logo_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
@@ -54,6 +48,69 @@ namespace NovaniX_EM2
             if (e.ChangedButton == MouseButton.Left)
             {
                 this.DragMove();
+            }
+        }
+
+        // ▼ 메뉴바 확장 상태를 저장하는 변수
+        private bool _isMenuExpanded = true;
+
+        // ▼ 추가할 코드: 메뉴바 토글 버튼 클릭 이벤트
+        private void BtnToggleMenu_Click(object sender, RoutedEventArgs e)
+        {
+            _isMenuExpanded = !_isMenuExpanded;
+
+            if (_isMenuExpanded)
+            {
+                // 메뉴 확장 시
+                MenuColumn.Width = new GridLength(230);
+                BtnToggleMenu.Content = "◀";
+
+                // 텍스트 블록 표시
+                TxtMenuMain.Visibility = Visibility.Visible;
+                TxtMenuBio.Visibility = Visibility.Visible;
+                TxtMenuMotion.Visibility = Visibility.Visible;
+                TxtMenuEtc.Visibility = Visibility.Visible;
+                TxtMenuSys.Visibility = Visibility.Visible;
+
+                // 종료 버튼 텍스트 복구
+                BtnExit.Content = "⏻ EXIT";
+            }
+            else
+            {
+                // 메뉴 축소 시 (아이콘만 남김)
+                MenuColumn.Width = new GridLength(50);
+                BtnToggleMenu.Content = "◁";
+
+                // 텍스트 블록 숨김
+                TxtMenuMain.Visibility = Visibility.Collapsed;
+                TxtMenuBio.Visibility = Visibility.Collapsed;
+                TxtMenuMotion.Visibility = Visibility.Collapsed;
+                TxtMenuEtc.Visibility = Visibility.Collapsed;
+                TxtMenuSys.Visibility = Visibility.Collapsed;
+
+                // 종료 버튼을 아이콘으로만 표시
+                BtnExit.Content = "⏻";
+            }
+        }
+
+        // ▼ 수정된 코드: Exit 버튼 클릭 시 MessageView 창을 띄워 확인 후 종료 ▼
+        private void BtnExit_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            // 버튼 2개(확인, 취소)만 사용하는 모드로 호출합니다. 대기 버튼(2번째 파라미터)은 null을 줍니다.
+            var msgView = new Views.MessageView(
+                message: "프로그램을 종료하시겠습니까?",
+                title: "종료 확인",
+                btnConfirmText: "종료",
+                btnWaitText: null!,
+                btnCancelText: "취소"
+            );
+
+            msgView.ShowDialog();
+
+            // 반환값이 0(확인/종료 버튼)일 경우에만 종료 수행
+            if (msgView.Result == 0)
+            {
+                System.Windows.Application.Current.Shutdown();
             }
         }
     }
