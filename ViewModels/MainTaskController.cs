@@ -1,14 +1,10 @@
-﻿using NovaniX_EM2.Helpers;
-using NovaniX_EM2.Devices;
+﻿using NovaniX_EM2.Devices;
+using NovaniX_EM2.Helpers;
 using NovaniX_EM2.ViewModels;
 using NovaniX_EM2.Views; // PetriEmptyDialog 호출을 위해 추가
-using System;
-using System.ComponentModel;
-using System.Collections.Generic;
 using System.Collections.ObjectModel; // ObservableCollection 처리를 위해 추가
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows; // Visibility 처리를 위해 추가
 using System.Windows.Input;
 
@@ -221,8 +217,8 @@ namespace NovaniX_EM2.Controllers
                     UnloadPetriVisibilities.Add(i >= (14 - _petri_UnloadCount) ? Visibility.Visible : Visibility.Hidden);
                 }
             });
-        } 
-        
+        }
+
         // --- 제어 메서드 ---
         // ★ 내부 변수 초기화 전용 함수 (동작 시작 시 호출)
         private void ResetStateVariables()
@@ -244,8 +240,11 @@ namespace NovaniX_EM2.Controllers
                 CurrentTaskName = "장비 초기화 진행 중 (Z축 이동)...";
 
                 // Load/Unload Petri Z축 초기화 (CancellationToken.None 사용)
-                await MoveAxisToSdDataAsync(3, 1, CancellationToken.None); // SlaveId 3번 축(Unload Petri Z)의 SD Data No.1 위치
-                await MoveAxisToSdDataAsync(4, 0, CancellationToken.None); // SlaveId 4번 축(Load Petri Z)의 SD Data No.0 위치
+                await MovePetriZAxisInitTaskAsync(CancellationToken.None);
+
+                // Load/Unload Sampler Cap Z축 초기화
+                await MoveAxisToSdDataAsync(6, 1, CancellationToken.None); // SlaveId 6번 축(Sampler Cap Load Z)의 SD Data No.1 위치
+                await MoveAxisToSdDataAsync(7, 1, CancellationToken.None); // SlaveId 7번 축(Sampler Cap UnLoad Z)의 SD Data No.1 위치
 
                 // ★ 추가: 입력된 수량(InitialPetriLoadCount)에 따라 Load Z축(4번 축) 보상 이동 
                 int emptySlots = 14 - InitialPetriLoadCount;
@@ -387,7 +386,8 @@ namespace NovaniX_EM2.Controllers
                     await RunSamplerCapLoadingTaskAsync(token);
                     break;
                 case ProcessStep.Air_Sampling:
-                    await RunAirSamplingTaskAsync(token);
+                    await Task.Delay(3000, token);
+                    //                   await RunAirSamplingTaskAsync(token);
                     break;
                 case ProcessStep.SamplerCap_Unloading:
                     await RunSamplerCapUnloadingTaskAsync(token);
@@ -460,7 +460,7 @@ namespace NovaniX_EM2.Controllers
                 await WaitForAxisCompletionAsync(motor, targetPos, token);
         }
 
-        private async Task MoveAxisTargetPosChangeAsync(int slaveId, int sdDataNo, int ChangePos, CancellationToken token)
+        private async Task MoveAxisTargetPosChangeAsync(int slaveId, int sdDataNo, int changePos, CancellationToken token)
         {
             if (!AzMotors.ContainsKey(slaveId)) throw new Exception($"축 {slaveId} 모터가 연결되지 않았습니다.");
             if (!AxisSdData.ContainsKey(slaveId) || AxisSdData[slaveId].Count <= sdDataNo)
@@ -469,8 +469,28 @@ namespace NovaniX_EM2.Controllers
             var motor = AzMotors[slaveId];
             var sdData = AxisSdData[slaveId][sdDataNo];
 
-            await motor.MoveAbsoluteAsync(sdDataNo, ChangePos, sdData.Velocity);
-            await WaitForAxisCompletionAsync(motor, ChangePos, token);
+            await motor.MoveAbsoluteAsync(sdDataNo, changePos, sdData.Velocity);
+
+
+            await WaitForAxisCompletionAsync(motor, changePos, token);
+        }
+
+        private async Task MoveAxisStepChangeAsync(int slaveId, int sdDataNo, CancellationToken token)
+        {
+            if (!AzMotors.ContainsKey(slaveId)) throw new Exception($"축 {slaveId} 모터가 연결되지 않았습니다.");
+            if (!AxisSdData.ContainsKey(slaveId) || AxisSdData[slaveId].Count <= sdDataNo)
+                throw new Exception($"축 {slaveId}의 SD 데이터({sdDataNo}번)를 찾을 수 없습니다.");
+
+            var motor = AzMotors[slaveId];
+            var sdData = AxisSdData[slaveId][sdDataNo];
+
+            int changePos = sdData.Value;
+            int currentPos = await motor.GetCurrentPositionAsync();
+
+            await motor.MoveAbsoluteAsync(sdDataNo, changePos, sdData.Velocity);
+
+
+            await WaitForAxisCompletionAsync(motor, (changePos+currentPos), token);
         }
 
         private async Task StopAxisAsync(int slaveId)
@@ -499,7 +519,7 @@ namespace NovaniX_EM2.Controllers
             }
             else if (Step == 2)
             {
-                await MoveAxisToSdDataAsync(2, 2, token);
+                //                await MoveAxisToSdDataAsync(2, 2, token);
                 await MoveAxisToSdDataAsync(1, 2, token);
             }
             else
@@ -518,12 +538,12 @@ namespace NovaniX_EM2.Controllers
             }
             else if (Step == 2)
             {
-                await MoveAxisToSdDataAsync(2, 5, token);
+                //                await MoveAxisToSdDataAsync(2, 5, token);
                 await MoveAxisToSdDataAsync(1, 5, token);
             }
             else if (Step == 3)
             {
-                await MoveAxisToSdDataAsync(2, 6, token);
+                //                await MoveAxisToSdDataAsync(2, 6, token);
                 await MoveAxisToSdDataAsync(1, 5, token);
             }
             else
@@ -551,7 +571,7 @@ namespace NovaniX_EM2.Controllers
             else if (Step == 2)
             {
                 await MoveAxisToSdDataAsync(1, 6, token);
-                await MoveAxisToSdDataAsync(2, 6, token);
+                //                await MoveAxisToSdDataAsync(2, 6, token);
             }
             else if (Step == 3)
             {
@@ -579,12 +599,12 @@ namespace NovaniX_EM2.Controllers
             }
             else if (Step == 2)
             {
-                await MoveAxisToSdDataAsync(2, 3, token);
+                //                await MoveAxisToSdDataAsync(2, 3, token);
             }
             else if (Step == 3)
             {
                 await MoveAxisToSdDataAsync(1, 6, token);
-                await MoveAxisToSdDataAsync(2, 7, token);
+                //                await MoveAxisToSdDataAsync(2, 7, token);
             }
             else
             {
@@ -598,13 +618,13 @@ namespace NovaniX_EM2.Controllers
             if (Step == 1)
             {
                 await MoveAxisToSdDataAsync(1, 6, token);
-                await MoveAxisToSdDataAsync(2, 7, token);
+                //                await MoveAxisToSdDataAsync(2, 7, token);
             }
             else if (Step == 2)
             {
                 await MoveAxisToSdDataAsync(2, 0, token);
                 await MoveAxisToSdDataAsync(1, 4, token);
-                await MoveAxisToSdDataAsync(2, 4, token);
+                //                await MoveAxisToSdDataAsync(2, 4, token);
             }
             else if (Step == 3)
             {
@@ -614,13 +634,13 @@ namespace NovaniX_EM2.Controllers
             else if (Step == 4)
             {
                 await MoveAxisToSdDataAsync(1, 4, token);
-                await MoveAxisToSdDataAsync(2, 4, token);
+                //                await MoveAxisToSdDataAsync(2, 4, token);
             }
             else if (Step == 5)
             {
                 await MoveAxisToSdDataAsync(2, 0, token);
                 await MoveAxisToSdDataAsync(1, 3, token);
-                await MoveAxisToSdDataAsync(2, 3, token);
+                //                await MoveAxisToSdDataAsync(2, 3, token);
             }
             else
             {
@@ -635,17 +655,17 @@ namespace NovaniX_EM2.Controllers
             {
                 await MoveAxisToSdDataAsync(2, 0, token);
                 await MoveAxisToSdDataAsync(1, 5, token);
-                await MoveAxisTargetPosChangeAsync(2, 5, 17200, token);
+                //                await MoveAxisTargetPosChangeAsync(2, 5, 17200, token);
             }
             else if (Step == 2)
             {
                 await MoveAxisToSdDataAsync(2, 0, token);
                 await MoveAxisToSdDataAsync(1, 6, token);
-                await MoveAxisTargetPosChangeAsync(2, 6, 7100, token);
+                //                await MoveAxisTargetPosChangeAsync(2, 6, 7100, token);
             }
             else if (Step == 3)
             {
-                await MoveAxisToSdDataAsync(2, 6, token);
+                //                await MoveAxisToSdDataAsync(2, 6, token);
             }
             else if (Step == 4)
             {
@@ -654,7 +674,7 @@ namespace NovaniX_EM2.Controllers
             }
             else if (Step == 5)
             {
-                await MoveAxisToSdDataAsync(2, 1, token);
+                //                await MoveAxisToSdDataAsync(2, 1, token);
                 await MoveAxisToSdDataAsync(1, 1, token);
             }
             else if (Step == 6)
@@ -669,16 +689,18 @@ namespace NovaniX_EM2.Controllers
             }
         }
 
-        private async Task MovePetriZAxisInitTaskAsync(CancellationToken token)
+        private async Task MoveLoad_UnloadStepTaskAsync(CancellationToken token)
         {
-            await MoveAxisToSdDataAsync(3, 2, token);
-            await MoveAxisToSdDataAsync(4, 2, token);
+//            await MoveAxisToSdDataAsync(3, 2, token);
+//            await MoveAxisToSdDataAsync(4, 2, token);
+            await MoveAxisStepChangeAsync(3, 2, token);
+            await MoveAxisStepChangeAsync(4, 2, token);
         }
 
-        private async Task MoveMachineTaskAsync(CancellationToken token)
+        private async Task MovePetriZAxisInitTaskAsync(CancellationToken token)
         {
-            await MoveAxisToSdDataAsync(3, 1, token);
-            await MoveAxisToSdDataAsync(4, 0, token);
+            await MoveAxisToSdDataAsync(3, 1, token); // SlaveId 3번 축(Unload Petri Z)의 SD Data No.1 위치
+            await MoveAxisToSdDataAsync(4, 0, token); // SlaveId 4번 축(Load Petri Z)의 SD Data No.0 위치
         }
 
         private async Task WaitForAxisCompletionAsync(OrientalAzMotorDevice motor, int targetPosition, CancellationToken token)
@@ -862,7 +884,7 @@ namespace NovaniX_EM2.Controllers
             CurrentTaskName = "Sampler Cap Loading ▶▶▶ CAP Unit 이동(Pick Up & Move)";
             await MoveSamplerCapLoadTaskAsync(1, token);
 
-            await MoveSamplerCapLoadTaskAsync(2, token);
+            //            await MoveSamplerCapLoadTaskAsync(2, token);
             await SetGripperCloseAsync(token);
             await MoveSamplerCapLoadTaskAsync(1, token);
 
@@ -921,7 +943,7 @@ namespace NovaniX_EM2.Controllers
 
             if (Petri_LoadCount != 0)
             {
-                await MovePetriZAxisInitTaskAsync(token);
+                await MoveLoad_UnloadStepTaskAsync(token);
             }
 
             CurrentTaskName = "Sampler CAP Pos ▶▶▶ Sampler Cap Load Pos 이동";
