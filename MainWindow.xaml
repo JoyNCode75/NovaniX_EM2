@@ -159,13 +159,13 @@
                     <RowDefinition Height="30"/>
                 </Grid.RowDefinitions>
 
-                <TabControl Grid.Row="0" SelectedIndex="{Binding ElementName=MenuListBox, Path=SelectedIndex}" BorderThickness="0" Background="#F4F6F8">
-                    <TabControl.ItemContainerStyle>
-                        <Style TargetType="TabItem">
-                            <Setter Property="Visibility" Value="Collapsed"/>
-                        </Style>
-                    </TabControl.ItemContainerStyle>
-
+                <TabControl Grid.Row="0" SelectedIndex="{Binding ElementName=MenuListBox, Path=SelectedIndex}" Background="#121212">
+                    <TabControl.Template>
+                        <ControlTemplate TargetType="TabControl">
+                            <ContentPresenter ContentSource="SelectedContent"/>
+                        </ControlTemplate>
+                    </TabControl.Template>
+                    
                     <TabItem>
                         <views:MainControlView />
                     </TabItem>

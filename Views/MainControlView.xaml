@@ -4,18 +4,23 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:NovaniX_EM2.Views"
+             xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
              mc:Ignorable="d" 
-             d:DesignHeight="720" d:DesignWidth="1280"
-             Background="#F0F0F0">
-
+             d:DesignHeight="800" d:DesignWidth="1280"
+             Background="#2C3E50">
     <UserControl.Resources>
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#E0E0E0"/>
+        </Style>
+
         <Style TargetType="GroupBox">
             <Setter Property="Margin" Value="10"/>
             <Setter Property="Padding" Value="15"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="FontSize" Value="14"/>
-            <Setter Property="BorderBrush" Value="#D0D0D0"/>
+            <Setter Property="BorderBrush" Value="#555555"/>
             <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="#E0E0E0"/>
         </Style>
 
         <Style x:Key="ControlButtonStyle" TargetType="ButtonBase">
@@ -23,79 +28,41 @@
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Margin" Value="10"/>
             <Setter Property="Height" Value="60"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <Style x:Key="DarkDataGridHeaderStyle" TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#333333"/>
+            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="Padding" Value="8,5"/>
+            <Setter Property="BorderBrush" Value="#444444"/>
+            <Setter Property="BorderThickness" Value="0,0,1,1"/>
+            <Setter Property="FontWeight" Value="Bold"/>
         </Style>
     </UserControl.Resources>
 
     <Grid Margin="10">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="4.5*"/>
+            <ColumnDefinition Width="5.5*"/>
         </Grid.ColumnDefinitions>
 
         <StackPanel Grid.Column="0">
-            <GroupBox Header="장비 조작 패널">
-                <StackPanel>
-                    <Button Content="장비 초기화" Style="{StaticResource ControlButtonStyle}" Background="#2196F3" Foreground="White"
-                            Command="{Binding TaskController.InitializeCommand}"/>
-
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <ToggleButton Grid.Column="0" Command="{Binding TaskController.ToggleStartStopCommand}" 
-                                      IsChecked="{Binding TaskController.StartStopToggleIsChecked, Mode=OneWay}">
-                            <ToggleButton.Style>
-                                <Style TargetType="ToggleButton" BasedOn="{StaticResource ControlButtonStyle}">
-                                    <Setter Property="Content" Value="장비 동작 시작"/>
-                                    <Setter Property="Background" Value="#4CAF50"/>
-                                    <Setter Property="Foreground" Value="White"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding TaskController.IsRunning}" Value="True">
-                                            <Setter Property="Content" Value="장비 동작 정지"/>
-                                            <Setter Property="Background" Value="#F44336"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </ToggleButton.Style>
-                        </ToggleButton>
-
-                        <Button Grid.Column="1" Command="{Binding TaskController.PauseResumeCommand}" Foreground="White">
-                            <Button.Style>
-                                <Style TargetType="Button" BasedOn="{StaticResource ControlButtonStyle}">
-                                    <Setter Property="Content" Value="일시 정지"/>
-                                    <Setter Property="Background" Value="#FF9800"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding TaskController.CurrentState}" Value="Paused">
-                                            <Setter Property="Content" Value="동작 재개"/>
-                                            <Setter Property="Background" Value="#FFB300"/>
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding TaskController.IsRunning}" Value="False">
-                                            <Setter Property="IsEnabled" Value="False"/>
-                                            <Setter Property="Background" Value="#CCCCCC"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
-                        </Button>
-                    </Grid>
-                </StackPanel>
-            </GroupBox>
-
             <GroupBox Header="동작 상태 및 진행률">
                 <StackPanel>
-                    <TextBlock Text="현재 동작 상태" FontSize="15" Foreground="#555" Margin="0,0,0,5"/>
-                    <TextBlock Text="{Binding TaskController.CurrentTaskName}" FontSize="24" FontWeight="Bold" Foreground="#007ACC" Margin="0,0,0,15"/>
+                    <TextBlock Text="현재 동작 상태" FontSize="15" Foreground="#AAAAAA" Margin="0,0,0,5"/>
+                    <TextBlock Text="{Binding TaskController.CurrentTaskName}" FontSize="24" FontWeight="Bold" Foreground="#4FC3F7" Margin="0,0,0,15"/>
 
                     <TextBlock Text="{Binding TaskController.ProgressRate, StringFormat='공정 진행률: {0}%'}" FontSize="15" Margin="0,0,0,5"/>
-                    <ProgressBar Value="{Binding TaskController.ProgressRate}" Minimum="0" Maximum="100" Height="25" Foreground="#4CAF50" Margin="0,0,0,15"/>
+                    <ProgressBar Value="{Binding TaskController.ProgressRate}" Minimum="0" Maximum="100" Height="25" Foreground="#66BB6A" Background="#333333" BorderBrush="#555555" Margin="0,0,0,15"/>
 
-                    <TextBlock Text="최근 알람 메시지" FontSize="15" Foreground="#555" Margin="0,0,0,5"/>
-                    <TextBlock Text="{Binding TaskController.RecentAlarm}" FontSize="16" FontWeight="Bold" Foreground="#F44336" TextWrapping="Wrap"/>
+                    <TextBlock Text="최근 알람 메시지" FontSize="15" Foreground="#AAAAAA" Margin="0,0,0,5"/>
+                    <TextBlock Text="{Binding TaskController.RecentAlarm}" FontSize="16" FontWeight="Bold" Foreground="#E57373" TextWrapping="Wrap"/>
                 </StackPanel>
             </GroupBox>
-            <GroupBox Header="Petri Dish 트레이 상태 (Load / Unload)" Margin="10,0,10,10">
+
+            <GroupBox Header="Petri Dish/Air Sampler Cap 트레이 상태 (Load / Unload)">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -103,24 +70,21 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0" HorizontalAlignment="Center" Margin="5">
-                        <TextBlock Text="Loading Tray" FontWeight="Bold" FontSize="16" Foreground="#4CAF50" HorizontalAlignment="Center" Margin="0,0,0,10"/>
-
+                        <TextBlock Text="Loading Tray" FontWeight="Bold" FontSize="16" Foreground="#81C784" HorizontalAlignment="Center" Margin="0,0,0,10"/>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,10">
                             <TextBlock Text="초기 세팅: " VerticalAlignment="Center" FontSize="14"/>
-                            <TextBox Text="{Binding TaskController.InitialPetriLoadCount, UpdateSourceTrigger=PropertyChanged}" Width="40" TextAlignment="Center" FontSize="14" FontWeight="Bold"/>
-                            <TextBlock Text="{Binding TaskController.Petri_LoadCount, StringFormat=' / 남음: {0}'}" VerticalAlignment="Center" FontSize="14" Foreground="#555" FontWeight="Bold" Margin="5,0,0,0"/>
+                            <TextBox Text="{Binding TaskController.InitialPetriLoadCount, UpdateSourceTrigger=PropertyChanged}" Width="40" TextAlignment="Center" FontSize="14" FontWeight="Bold" Background="#252526" Foreground="White" BorderBrush="#555555"/>
+                            <TextBlock Text="{Binding TaskController.Petri_LoadCount, StringFormat=' / 남음: {0}'}" VerticalAlignment="Center" FontSize="14" Foreground="#AAAAAA" FontWeight="Bold" Margin="5,0,0,0"/>
                         </StackPanel>
-
                         <Grid Width="140" Height="240" Margin="0,5,0,0">
-                            <Border Width="12" Background="#9E9E9E" HorizontalAlignment="Left" CornerRadius="4,4,0,0"/>
-                            <Border Width="12" Background="#9E9E9E" HorizontalAlignment="Right" CornerRadius="4,4,0,0"/>
-
+                            <Border Width="12" Background="#444444" HorizontalAlignment="Left" CornerRadius="4,4,0,0"/>
+                            <Border Width="12" Background="#444444" HorizontalAlignment="Right" CornerRadius="4,4,0,0"/>
                             <ItemsControl ItemsSource="{Binding TaskController.LoadPetriVisibilities}" VerticalAlignment="Bottom" Margin="0,0,0,5" HorizontalAlignment="Center">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Border Width="100" Height="14" Background="#81C784" CornerRadius="4" Margin="0,1" Visibility="{Binding}">
                                             <Border.Effect>
-                                                <DropShadowEffect Color="Black" Opacity="0.2" BlurRadius="2" ShadowDepth="1"/>
+                                                <DropShadowEffect Color="Black" Opacity="0.5" BlurRadius="3" ShadowDepth="1"/>
                                             </Border.Effect>
                                         </Border>
                                     </DataTemplate>
@@ -130,24 +94,21 @@
                     </StackPanel>
 
                     <StackPanel Grid.Column="1" HorizontalAlignment="Center" Margin="5">
-                        <TextBlock Text="Unloading Tray" FontWeight="Bold" FontSize="16" Foreground="#FF9800" HorizontalAlignment="Center" Margin="0,0,0,10"/>
-
+                        <TextBlock Text="Unloading Tray" FontWeight="Bold" FontSize="16" Foreground="#FFB74D" HorizontalAlignment="Center" Margin="0,0,0,10"/>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,10">
                             <TextBlock Text="적재 수량: " VerticalAlignment="Center" FontSize="14"/>
-                            <TextBlock Text="{Binding TaskController.Petri_UnloadCount}" Width="30" TextAlignment="Center" FontSize="14" FontWeight="Bold" Foreground="#FF9800"/>
-                            <TextBlock Text="{Binding TaskController.InitialPetriLoadCount, StringFormat=' / {0}'}" VerticalAlignment="Center" FontSize="14" Foreground="#555" FontWeight="Bold"/>
+                            <TextBlock Text="{Binding TaskController.Petri_UnloadCount}" Width="30" TextAlignment="Center" FontSize="14" FontWeight="Bold" Foreground="#FFB74D"/>
+                            <TextBlock Text="{Binding TaskController.InitialPetriLoadCount, StringFormat=' / {0}'}" VerticalAlignment="Center" FontSize="14" Foreground="#AAAAAA" FontWeight="Bold"/>
                         </StackPanel>
-
                         <Grid Width="140" Height="240" Margin="0,5,0,0">
-                            <Border Width="12" Background="#9E9E9E" HorizontalAlignment="Left" CornerRadius="4,4,0,0"/>
-                            <Border Width="12" Background="#9E9E9E" HorizontalAlignment="Right" CornerRadius="4,4,0,0"/>
-
+                            <Border Width="12" Background="#444444" HorizontalAlignment="Left" CornerRadius="4,4,0,0"/>
+                            <Border Width="12" Background="#444444" HorizontalAlignment="Right" CornerRadius="4,4,0,0"/>
                             <ItemsControl ItemsSource="{Binding TaskController.UnloadPetriVisibilities}" VerticalAlignment="Bottom" Margin="0,0,0,5" HorizontalAlignment="Center">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Border Width="100" Height="14" Background="#FFB74D" CornerRadius="4" Margin="0,1" Visibility="{Binding}">
                                             <Border.Effect>
-                                                <DropShadowEffect Color="Black" Opacity="0.2" BlurRadius="2" ShadowDepth="1"/>
+                                                <DropShadowEffect Color="Black" Opacity="0.5" BlurRadius="3" ShadowDepth="1"/>
                                             </Border.Effect>
                                         </Border>
                                     </DataTemplate>
@@ -159,164 +120,209 @@
             </GroupBox>
         </StackPanel>
 
-        <GroupBox Grid.Column="1" Header="검사 및 측정 결과">
-            <TabControl Background="White" BorderBrush="#DDDDDD" BorderThickness="1">
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-                <TabItem Header="Particle Counter" FontSize="14" FontWeight="Bold">
-                    <Grid Margin="10">
-                        <StackPanel>
-                            <TextBlock Text="측정 데이터 결과 (Measurement Data Result)" FontWeight="Bold" FontSize="16" Foreground="#333" Margin="0,0,0,15"/>
+            <GroupBox Grid.Row="0" Header="검사 및 측정 결과">
+                <TabControl Background="#2C3E50" BorderBrush="#444444" BorderThickness="1" Cursor="">
+                    <TabControl.Resources>
+                        <Style TargetType="TabItem">
+                            <Setter Property="FontSize" Value="14"/>
+                            <Setter Property="FontWeight" Value="Bold"/>
+                            <Setter Property="Cursor" Value="Hand"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="TabItem">
+                                        <Border x:Name="TabBorder" Background="#2D2D30" BorderBrush="#444444" BorderThickness="1,1,1,0" Margin="0,0,2,0" Padding="25,10" CornerRadius="4,4,0,0">
+                                            <ContentPresenter x:Name="TabContent" ContentSource="Header" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter TargetName="TabBorder" Property="Background" Value="#1E1E1E"/>
+                                                <Setter TargetName="TabBorder" Property="BorderThickness" Value="1,1,1,0"/>
+                                                <Setter Property="Foreground" Value="#4FC3F7"/>
+                                            </Trigger>
+                                            <Trigger Property="IsSelected" Value="False">
+                                                <Setter Property="Foreground" Value="#AAAAAA"/>
+                                            </Trigger>
+                                            <MultiTrigger>
+                                                <MultiTrigger.Conditions>
+                                                    <Condition Property="IsMouseOver" Value="True"/>
+                                                    <Condition Property="IsSelected" Value="False"/>
+                                                </MultiTrigger.Conditions>
+                                                <Setter TargetName="TabBorder" Property="Background" Value="#3E3E42"/>
+                                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                                            </MultiTrigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </TabControl.Resources>
+                    <TabItem Header="Particle Counter">
+                        <Grid Margin="10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="120"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
 
-                            <Grid Margin="10,0,0,20">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="30"/>
-                                    <RowDefinition Height="30"/>
-                                    <RowDefinition Height="30"/>
-                                </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="130"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-
-                                <Grid.Resources>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="VerticalAlignment" Value="Center"/>
-                                        <Setter Property="Foreground" Value="#555"/>
-                                        <Setter Property="FontSize" Value="14"/>
-                                    </Style>
-                                </Grid.Resources>
-
-                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Start Time :" FontWeight="SemiBold"/>
-                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding ParticleStartTime, FallbackValue='--'}" HorizontalAlignment="Right"/>
-
-                                <TextBlock Grid.Row="1" Grid.Column="0" Text="End Time :" FontWeight="SemiBold"/>
-                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding ParticleEndTime, FallbackValue='--'}" HorizontalAlignment="Right"/>
-
-                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Elapsed Time :" FontWeight="SemiBold"/>
-                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding ParticleElapsedTime, FallbackValue='00:00:00'}" HorizontalAlignment="Right"/>
-                            </Grid>
-
-                            <Border BorderBrush="#BDBDBD" BorderThickness="1" CornerRadius="4" Background="White" Margin="10,0,0,15">
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="35"/>
-                                        <RowDefinition Height="40"/>
-                                        <RowDefinition Height="40"/>
-                                    </Grid.RowDefinitions>
+                            <StackPanel Grid.Row="0">
+                                <TextBlock Text="측정 데이터 결과 (Measurement Data Result)" FontWeight="Bold" FontSize="16" Foreground="#E0E0E0" Margin="0,0,0,5"/>
+                                <Grid Margin="10,0,0,5">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="1*"/>
-                                        <ColumnDefinition Width="2*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-
-                                    <Border Grid.Row="0" Grid.Column="0" Background="#F5F5F5" BorderBrush="#E0E0E0" BorderThickness="0,0,1,1">
-                                        <TextBlock Text="㎛" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" Foreground="#333"/>
-                                    </Border>
-                                    <Border Grid.Row="0" Grid.Column="1" Background="#F5F5F5" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
-                                        <TextBlock Text="Σ (n)" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" Foreground="#333"/>
-                                    </Border>
-
-                                    <Border Grid.Row="1" Grid.Column="0" BorderBrush="#E0E0E0" BorderThickness="0,0,1,1">
-                                        <TextBlock Text="0.5" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" Foreground="#555" FontSize="15"/>
-                                    </Border>
-                                    <Border Grid.Row="1" Grid.Column="1" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
-                                        <TextBlock Text="{Binding Part05_Sum, FallbackValue='0'}" Margin="0,0,10,0" HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="Bold" Foreground="#007ACC" FontSize="16"/>
-                                    </Border>
-
-                                    <Border Grid.Row="2" Grid.Column="0" BorderBrush="#E0E0E0" BorderThickness="0,0,1,0">
-                                        <TextBlock Text="5.0" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" Foreground="#555" FontSize="15"/>
-                                    </Border>
-                                    <Border Grid.Row="2" Grid.Column="1" BorderBrush="#E0E0E0" BorderThickness="0,0,0,0">
-                                        <TextBlock Text="{Binding Part50_Sum, FallbackValue='0'}" Margin="0,0,10,0" HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="Bold" Foreground="#007ACC" FontSize="16"/>
-                                    </Border>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="{Binding ParticleStartTime, StringFormat='Start Time : {0}'}" Foreground="#AAAAAA"/>
+                                        <TextBlock Text="{Binding ParticleEndTime, StringFormat='End Time : {0}'}" Foreground="#AAAAAA"/>
+                                        <TextBlock Text="{Binding ParticleElapsedTime, StringFormat='Elapsed Time : {0}'}" Foreground="#AAAAAA"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                                        <TextBlock Text="{Binding Part05_Sum, StringFormat='0.5㎛ 합계 : {0}'}" FontWeight="Bold" Foreground="#4FC3F7" FontSize="15"/>
+                                        <TextBlock Text="{Binding Part50_Sum, StringFormat='5.0㎛ 합계 : {0}'}" FontWeight="Bold" Foreground="#E57373" FontSize="15"/>
+                                    </StackPanel>
                                 </Grid>
-                            </Border>
+                            </StackPanel>
 
-                            <DataGrid ItemsSource="{Binding ParticleCounterDataList}" AutoGenerateColumns="True" IsReadOnly="True" MinHeight="200"/>
-                        </StackPanel>
-                    </Grid>
-                </TabItem>
-                <TabItem Header="Air Sampler" FontSize="14" FontWeight="Bold">
-                    <Grid Margin="10">
-                        <StackPanel>
-                            <TextBlock Text="측정 데이터 결과 (Sampling Data Result)" FontWeight="Bold" FontSize="16" Foreground="#333" Margin="0,0,0,15"/>
+                            <DataGrid Grid.Row="1" ItemsSource="{Binding ParticleCounterDataList}" AutoGenerateColumns="True" IsReadOnly="True" Margin="0,5,0,10"
+                                      Background="#1E1E1E" RowBackground="#252526" AlternatingRowBackground="#2D2D30" 
+                                      Foreground="#E0E0E0" BorderBrush="#444444" HorizontalGridLinesBrush="#333333" VerticalGridLinesBrush="#333333"
+                                      HeadersVisibility="Column" ColumnHeaderStyle="{StaticResource DarkDataGridHeaderStyle}"/>
 
-                            <Grid Margin="10,0,0,20">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="30"/>
-                                    <RowDefinition Height="30"/>
-                                    <RowDefinition Height="30"/>
-                                    <RowDefinition Height="30"/>
-                                    <RowDefinition Height="30"/>
-                                </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="130"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
+                            <lvc:CartesianChart Grid.Row="2" Series="{Binding ParticleSeries}" LegendLocation="Top" Margin="0,5,0,0" Foreground="#E0E0E0">
+                                <lvc:CartesianChart.AxisX>
+                                    <lvc:Axis Title="측정 횟수" Labels="{Binding ParticleLabels}" Foreground="#AAAAAA">
+                                        <lvc:Axis.Separator>
+                                            <lvc:Separator Stroke="#333333" />
+                                        </lvc:Axis.Separator>
+                                    </lvc:Axis>
+                                </lvc:CartesianChart.AxisX>
+                                <lvc:CartesianChart.AxisY>
+                                    <lvc:Axis Title="0.5㎛ Count" MinValue="0" Foreground="#4FC3F7">
+                                        <lvc:Axis.Separator>
+                                            <lvc:Separator Step="100" Stroke="#333333" />
+                                        </lvc:Axis.Separator>
+                                    </lvc:Axis>
+                                    <lvc:Axis Title="5.0㎛ Count" MinValue="100" Position="RightTop" Foreground="#E57373">
+                                        <lvc:Axis.Separator>
+                                            <lvc:Separator Step="1000" Stroke="#333333" />
+                                        </lvc:Axis.Separator>
+                                    </lvc:Axis>
+                                </lvc:CartesianChart.AxisY>
+                            </lvc:CartesianChart>
+                        </Grid>
+                    </TabItem>
 
-                                <Grid.Resources>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="VerticalAlignment" Value="Center"/>
-                                        <Setter Property="Foreground" Value="#555"/>
-                                        <Setter Property="FontSize" Value="14"/>
-                                    </Style>
-                                </Grid.Resources>
+                    <TabItem Header="Air Sampler">
+                        <Grid Margin="10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="120"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
 
-                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Start Time :" FontWeight="SemiBold"/>
-                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding AirSamplerStartTime, FallbackValue='02/24/2025 00:00:00'}" HorizontalAlignment="Right"/>
-
-                                <TextBlock Grid.Row="1" Grid.Column="0" Text="End Time :" FontWeight="SemiBold"/>
-                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding AirSamplerEndTime, FallbackValue='02/24/2025 00:00:00'}" HorizontalAlignment="Right"/>
-
-                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Elapse Time :" FontWeight="SemiBold"/>
-                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding AirSamplerElapseTime, FallbackValue='00:00:00'}" HorizontalAlignment="Right"/>
-
-                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Sampling Volume :" FontWeight="SemiBold"/>
-                                <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding AirSamplerMeasureVolume, FallbackValue='0.0 L'}" HorizontalAlignment="Right"/>
-
-                                <TextBlock Grid.Row="4" Grid.Column="0" Text="Sampling Flow :" FontWeight="SemiBold"/>
-                                <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding AirSamplerMeasureFlow, FallbackValue='0.0 LPM'}" HorizontalAlignment="Right"/>
-                            </Grid>
-
-                            <Border BorderBrush="#BDBDBD" BorderThickness="1" CornerRadius="4" Background="White" Margin="10,0,0,15">
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="35"/>
-                                        <RowDefinition Height="40"/>
-                                        <RowDefinition Height="40"/>
-                                    </Grid.RowDefinitions>
+                            <StackPanel Grid.Row="0">
+                                <TextBlock Text="측정 데이터 결과 (Sampling Data Result)" FontWeight="Bold" FontSize="16" Foreground="#E0E0E0" Margin="0,0,0,5"/>
+                                <Grid Margin="10,0,0,5">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="1*"/>
-                                        <ColumnDefinition Width="2*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-
-                                    <Border Grid.Row="0" Grid.Column="0" Background="#F5F5F5" BorderBrush="#E0E0E0" BorderThickness="0,0,1,1">
-                                        <TextBlock Text="Data" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" Foreground="#333"/>
-                                    </Border>
-                                    <Border Grid.Row="0" Grid.Column="1" Background="#F5F5F5" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
-                                        <TextBlock Text="Result" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" Foreground="#333"/>
-                                    </Border>
-
-                                    <Border Grid.Row="1" Grid.Column="0" BorderBrush="#E0E0E0" BorderThickness="0,0,1,1">
-                                        <TextBlock Text="Volume(ℓ)" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" Foreground="#555" FontSize="15"/>
-                                    </Border>
-                                    <Border Grid.Row="1" Grid.Column="1" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
-                                        <TextBlock Text="{Binding AirSamplerVolumeResult, FallbackValue='0'}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" Foreground="#007ACC" FontSize="16"/>
-                                    </Border>
-
-                                    <Border Grid.Row="2" Grid.Column="0" BorderBrush="#E0E0E0" BorderThickness="0,0,1,0">
-                                        <TextBlock Text="Interval Time" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" Foreground="#555" FontSize="15"/>
-                                    </Border>
-                                    <Border Grid.Row="2" Grid.Column="1" BorderBrush="#E0E0E0" BorderThickness="0,0,0,0">
-                                        <TextBlock Text="{Binding AirSamplerIntervalTimeResult, FallbackValue='00m : 00s'}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" Foreground="#007ACC" FontSize="16"/>
-                                    </Border>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="{Binding AirSamplerStartTime, StringFormat='Start : {0}'}" Foreground="#AAAAAA"/>
+                                        <TextBlock Text="{Binding AirSamplerEndTime, StringFormat='End : {0}'}" Foreground="#AAAAAA"/>
+                                        <TextBlock Text="{Binding AirSamplerMeasureVolume, StringFormat='Volume : {0}'}" Foreground="#AAAAAA"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                                        <TextBlock Text="{Binding AirSamplerVolumeResult, StringFormat='Volume Result : {0} L'}" FontWeight="Bold" Foreground="#4FC3F7" FontSize="15"/>
+                                        <TextBlock Text="{Binding AirSamplerIntervalTimeResult, StringFormat='Interval : {0}'}" FontWeight="Bold" Foreground="#4FC3F7" FontSize="15"/>
+                                    </StackPanel>
                                 </Grid>
-                            </Border>
+                            </StackPanel>
 
-                            <DataGrid ItemsSource="{Binding AirSamplerDataList}" AutoGenerateColumns="True" IsReadOnly="True" MinHeight="200"/>
-                        </StackPanel>
-                    </Grid>
-                </TabItem>
-            </TabControl>
-        </GroupBox>
+                            <DataGrid Grid.Row="1" ItemsSource="{Binding AirSamplerDataList}" AutoGenerateColumns="True" IsReadOnly="True" Margin="0,5,0,10"
+                                      Background="#1E1E1E" RowBackground="#252526" AlternatingRowBackground="#2D2D30" 
+                                      Foreground="#E0E0E0" BorderBrush="#444444" HorizontalGridLinesBrush="#333333" VerticalGridLinesBrush="#333333"
+                                      HeadersVisibility="Column" ColumnHeaderStyle="{StaticResource DarkDataGridHeaderStyle}"/>
+
+                            <lvc:CartesianChart Grid.Row="2" Series="{Binding AirSamplerSeries}" LegendLocation="Top" Margin="0,5,0,0" Foreground="#E0E0E0">
+                                <lvc:CartesianChart.AxisX>
+                                    <lvc:Axis Title="측정 횟수" Labels="{Binding AirSamplerLabels}" Foreground="#AAAAAA">
+                                        <lvc:Axis.Separator>
+                                            <lvc:Separator Stroke="#333333" />
+                                        </lvc:Axis.Separator>
+                                    </lvc:Axis>
+                                </lvc:CartesianChart.AxisX>
+                                <lvc:CartesianChart.AxisY>
+                                    <lvc:Axis Title="Interval Time (Sec)" MinValue="0" Foreground="#4FC3F7">
+                                        <lvc:Axis.Separator>
+                                            <lvc:Separator Step="10" Stroke="#333333" />
+                                        </lvc:Axis.Separator>
+                                    </lvc:Axis>
+                                </lvc:CartesianChart.AxisY>
+                            </lvc:CartesianChart>
+                        </Grid>
+                    </TabItem>
+                </TabControl>
+            </GroupBox>
+
+            <GroupBox Grid.Row="1" Header="장비 조작 패널">
+                <Grid Cursor="">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Button Grid.Column="0" Content="장비 초기화" Style="{StaticResource ControlButtonStyle}" Background="#1976D2" Foreground="White"
+                            Command="{Binding TaskController.InitializeCommand}"/>
+
+                    <ToggleButton Grid.Column="1" Command="{Binding TaskController.ToggleStartStopCommand}" 
+                                  IsChecked="{Binding TaskController.StartStopToggleIsChecked, Mode=OneWay}">
+                        <ToggleButton.Style>
+                            <Style TargetType="ToggleButton" BasedOn="{StaticResource ControlButtonStyle}">
+                                <Setter Property="Content" Value="동작 시작"/>
+                                <Setter Property="Background" Value="#388E3C"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding TaskController.IsRunning}" Value="True">
+                                        <Setter Property="Content" Value="동작 정지"/>
+                                        <Setter Property="Background" Value="#D32F2F"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ToggleButton.Style>
+                    </ToggleButton>
+
+                    <Button Grid.Column="2" Command="{Binding TaskController.PauseResumeCommand}">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource ControlButtonStyle}">
+                                <Setter Property="Content" Value="일시 정지"/>
+                                <Setter Property="Background" Value="#FFB300"/>
+                                <Setter Property="Foreground" Value="#121212"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding TaskController.CurrentState}" Value="Paused">
+                                        <Setter Property="Content" Value="동작 재개"/>
+                                        <Setter Property="Background" Value="#00ACC1"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                    </DataTrigger>
+
+                                    <DataTrigger Binding="{Binding TaskController.IsRunning}" Value="False">
+                                        <Setter Property="IsEnabled" Value="False"/>
+                                        <Setter Property="Background" Value="#444444"/>
+                                        <Setter Property="Foreground" Value="#888888"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </Grid>
+            </GroupBox>
+        </Grid>
     </Grid>
 </UserControl>

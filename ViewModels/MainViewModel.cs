@@ -3,6 +3,8 @@ using NovaniX_EM2.Devices;
 using NovaniX_EM2.Helpers;
 using NovaniX_EM2.Models; // ★ Models 네임스페이스 추가
 using NovaniX_EM2.Controllers; // MainTaskController가 위치한 네임스페이스
+using LiveCharts;
+using LiveCharts.Wpf;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -115,6 +117,34 @@ namespace NovaniX_EM2.ViewModels
 
         private System.IO.Ports.StopBits _stopBits = System.IO.Ports.StopBits.One;
         public System.IO.Ports.StopBits StopBits { get => _stopBits; set { _stopBits = value; OnPropertyChanged(); } }
+
+        // --- LiveCharts 속성 (CS8618 워닝 해결) ---
+        // --- LiveCharts 속성 ---
+        public SeriesCollection ParticleSeries { get; set; } = new SeriesCollection
+        {
+            new LineSeries
+            {
+                Title = "0.5㎛",
+                Values = new ChartValues<double>(),
+                ScalesYAt = 0  // 0번째(왼쪽) Y축을 기준으로 매핑
+            },
+            new LineSeries
+            {
+                Title = "5.0㎛",
+                Values = new ChartValues<double>(),
+                ScalesYAt = 1  // 1번째(오른쪽) Y축을 기준으로 매핑
+            }
+        };
+        public ObservableCollection<string> ParticleLabels { get; set; } = new ObservableCollection<string>();
+
+        public SeriesCollection AirSamplerSeries { get; set; } = new SeriesCollection
+        {
+            new LineSeries { Title = "Interval Time(초)", Values = new ChartValues<double>() }
+        };
+        public ObservableCollection<string> AirSamplerLabels { get; set; } = new ObservableCollection<string>();
+
+        // 에어샘플러 raw Interval 초(Seconds) 저장을 위한 임시 변수
+        private double _currentAirSamplerIntervalSeconds = 0;
 
         #region [ 1. AZ Motor Control ]
         // ★ 오리엔탈 모터 디바이스 추가
@@ -1068,23 +1098,29 @@ namespace NovaniX_EM2.ViewModels
         // ★ 파티클 동작 스텝이 끝났을 때 데이터그리드(리스트)에 결과를 추가하는 함수
         private async Task FinalizeParticleMeasurementAsync()
         {
-            // 마지막 최종 데이터 갱신
             await PollParticleDataAsync();
 
-            // UI 스레드에서 리스트에 1행(Row) 추가
+            // 콤마(,)가 포함된 문자열 포맷을 double로 변환
+            double.TryParse(this.Part05_Sum.Replace(",", ""), out double val05);
+            double.TryParse(this.Part50_Sum.Replace(",", ""), out double val50);
+
             Application.Current.Dispatcher.Invoke(() =>
             {
                 ParticleCounterDataList.Add(new ParticleDataModel
                 {
-                    StartTime = this.ParticleStartTime, // 바인딩된 프로퍼티들
+                    StartTime = this.ParticleStartTime,
                     EndTime = this.ParticleEndTime,
                     ElapsedTime = this.ParticleElapsedTime,
                     Part05_Sum = this.Part05_Sum,
                     Part50_Sum = this.Part50_Sum
                 });
-            });
 
-            Console.WriteLine("파티클 카운터 측정 완료: DataGrid 리스트에 추가되었습니다.");
+                // 🟢 LiveChart에 데이터 추가
+                ParticleSeries[0].Values.Add(val05);
+                ParticleSeries[1].Values.Add(val50);
+                ParticleLabels.Add(ParticleCounterDataList.Count.ToString()); // X축: 1, 2, 3...
+            });
+            Console.WriteLine("파티클 카운터 측정 완료: DataGrid 및 차트에 추가되었습니다.");
         }
 
         // ▼ 파티클 카운터 상태 코드 (0=유휴, 1=측정중, 257(0x0101)=홀드)
@@ -1329,6 +1365,9 @@ namespace NovaniX_EM2.ViewModels
                     TimeSpan ts = TimeSpan.FromSeconds(data.totalInterval);
                     AirSamplerIntervalTimeResult = $"{(int)ts.TotalMinutes:D2}m : {ts.Seconds:D2}s";
 
+                    // 🟢 새로 추가: 차트의 Y축으로 사용할 Raw 초(Seconds) 데이터 저장
+                    _currentAirSamplerIntervalSeconds = data.totalInterval;
+
                     // ▼ 새로 추가했던 Flow Rate 및 Volume 읽기 후 UI 업데이트 ▼
                     var flowVolData = await _airSamplerDevice.ReadFlowAndVolumeAsync(AirSamplerIsFloatMode);
                     // 읽어온 값을 바탕으로 포맷팅하여 바인딩 (소수점 1자리 + 단위 표시)
@@ -1365,10 +1404,8 @@ namespace NovaniX_EM2.ViewModels
         // ★ 2. TaskController에서 'ProcessStep.Air_Sampling' 완료 이벤트를 받으면 실행될 함수
         private async Task FinalizeAirSamplingAsync()
         {
-            // 장비로부터 마지막 측정 데이터를 확실히 업데이트
             await PollAirSamplerDataAsync();
 
-            // 읽어온 프로퍼티 값을 기반으로 DataGrid 리스트에 결과 1행(Row) 추가
             Application.Current.Dispatcher.Invoke(() =>
             {
                 AirSamplerDataList.Add(new AirSamplerDataModel
@@ -1380,9 +1417,12 @@ namespace NovaniX_EM2.ViewModels
                     FlowRate = this.AirSamplerMeasureFlow,
                     IntervalTime = this.AirSamplerIntervalTimeResult
                 });
-            });
 
-            Console.WriteLine("에어 샘플러 측정 완료: DataGrid 리스트에 추가되었습니다.");
+                // 🟢 LiveChart에 데이터 추가
+                AirSamplerSeries[0].Values.Add(_currentAirSamplerIntervalSeconds);
+                AirSamplerLabels.Add(AirSamplerDataList.Count.ToString()); // X축: 1, 2, 3...
+            });
+            Console.WriteLine("에어 샘플러 측정 완료: DataGrid 및 차트에 추가되었습니다.");
         }
 
         private bool _airSamplerIsFloatMode;
