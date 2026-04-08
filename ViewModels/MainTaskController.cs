@@ -170,9 +170,42 @@ namespace NovaniX_EM2.Controllers
         public ObservableCollection<Visibility> LoadPetriVisibilities { get; } = new ObservableCollection<Visibility>();
         public ObservableCollection<Visibility> UnloadPetriVisibilities { get; } = new ObservableCollection<Visibility>();
         // =========================================================
+        // ★ Air Sampler Cap UI 바인딩 및 시각화용 컬렉션 추가
+        // =========================================================
+        // 초기 수량 프로퍼티 세터에서 에러가 발생하지 않도록 방어 코드 적용
+        private int _initialCapLoadCount = 10;
+        public int InitialCapLoadCount
+        {
+            get => _initialCapLoadCount;
+            set
+            {
+                if (value > 10) value = 10;
+                if (value < 0) value = 0;
+                _initialCapLoadCount = value;
+                OnPropertyChanged(nameof(InitialCapLoadCount));
+
+                // [수정] 컬렉션의 갯수를 초과하여 참조하지 않도록 Count 체크
+                for (int i = 0; i < 10; i++)
+                {
+                    if (i < LoadCapVisibilities.Count)
+                    {
+                        LoadCapVisibilities[i] = (i < value) ? Visibility.Visible : Visibility.Hidden;
+                    }
+                }
+            }
+        }
+
+        // 동작하며 카운팅될 Cap 수량
+        public int Cap_LoadCount { get; set; }
+        public int Cap_UnloadCount { get; set; }
+
+        // Cap의 UI Visibility 리스트
+        public ObservableCollection<Visibility> LoadCapVisibilities { get; set; } = new ObservableCollection<Visibility>();
+        public ObservableCollection<Visibility> UnloadCapVisibilities { get; set; } = new ObservableCollection<Visibility>();
+
+        // =========================================================
         // ★ 추가: 다축(Multi-Axis) AZ 모터 및 SD Data 관리 딕셔너리
         // =========================================================
-
         public Dictionary<int, OrientalAzMotorDevice> AzMotors { get; set; } = new Dictionary<int, OrientalAzMotorDevice>();
         public Dictionary<int, List<TargetPositionItem>> AxisSdData { get; set; } = new Dictionary<int, List<TargetPositionItem>>();
 
@@ -208,6 +241,16 @@ namespace NovaniX_EM2.Controllers
                 LoadPetriVisibilities.Add(Visibility.Visible);
                 UnloadPetriVisibilities.Add(Visibility.Hidden);
             }
+
+            // ========================================================
+            // [수정] IndexOutOfRange 에러 방지를 위해 컬렉션 초기 공간 생성
+            // ========================================================
+            for (int i = 0; i < 10; i++)
+            {
+                LoadCapVisibilities.Add(Visibility.Hidden);
+                UnloadCapVisibilities.Add(Visibility.Hidden);
+            }
+
             UpdateVisualPetris();
         }
 
@@ -239,6 +282,8 @@ namespace NovaniX_EM2.Controllers
             CurrentStep = ProcessStep.Ready;
             Petri_LoadCount = InitialPetriLoadCount; // ★ 입력된 초기값 반영
             Petri_UnloadCount = 0;                   // ★ Unload는 0으로 초기화
+            Cap_LoadCount = InitialCapLoadCount; // ★ 입력된 초기값 반영
+            Cap_UnloadCount = 0;                   // ★ Unload는 0으로 초기화
             ProgressRate = 0;
             RecentAlarm = "알람 없음";
         }
