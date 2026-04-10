@@ -19,6 +19,12 @@ namespace NovaniX_EM2
         public MainWindow()
         {
             InitializeComponent();
+
+            // ★ 추가된 코드: 창이 완전히 로드된 직후 MainControlView를 강제로 첫 화면에 띄웁니다.
+            this.Loaded += (s, e) =>
+            {
+                MainContent.Content = new Views.MainControlView();
+            };
         }
 
         // ▼ 추가된 코드: 로고 이미지를 더블 클릭했을 때만 최대화/복구 기능 수행 ▼
@@ -52,44 +58,76 @@ namespace NovaniX_EM2
         }
 
         // ▼ 메뉴바 확장 상태를 저장하는 변수
-        private bool _isMenuExpanded = true;
+        // ★ 기본값을 축소 모드(false)로 변경
+        private bool _isMenuExpanded = false;
 
         // ▼ 추가할 코드: 메뉴바 토글 버튼 클릭 이벤트
         private void BtnToggleMenu_Click(object sender, RoutedEventArgs e)
         {
             _isMenuExpanded = !_isMenuExpanded;
+            UpdateMenuState();
+        }
 
+        private void UpdateMenuState()
+        {
             if (_isMenuExpanded)
             {
-                // 메뉴 확장 시
-                MenuColumn.Width = new GridLength(230);
-                BtnToggleMenu.Content = "◀";
+                // [확장 모드] : 넓이를 215로 늘림 (컨텐츠 200 + 버튼 15)
+                MenuBorder.Width = 215;
+                BtnToggleMenu.Content = "◀"; // 버튼 방향 반전
 
-                // 텍스트 블록 표시
+                // 텍스트 보이기
                 TxtMenuMain.Visibility = Visibility.Visible;
                 TxtMenuBio.Visibility = Visibility.Visible;
                 TxtMenuMotion.Visibility = Visibility.Visible;
                 TxtMenuEtc.Visibility = Visibility.Visible;
                 TxtMenuSys.Visibility = Visibility.Visible;
 
-                // 종료 버튼 텍스트 복구
                 BtnExit.Content = "⏻ EXIT";
             }
             else
             {
-                // 메뉴 축소 시 (아이콘만 남김)
-                MenuColumn.Width = new GridLength(50);
-                BtnToggleMenu.Content = "◁";
+                // [축소 모드] : 넓이를 65로 줄임 (아이콘 50 + 버튼 15)
+                MenuBorder.Width = 65;
+                BtnToggleMenu.Content = "▶"; // 버튼 방향 복구
 
-                // 텍스트 블록 숨김
+                // 텍스트 숨김
                 TxtMenuMain.Visibility = Visibility.Collapsed;
                 TxtMenuBio.Visibility = Visibility.Collapsed;
                 TxtMenuMotion.Visibility = Visibility.Collapsed;
                 TxtMenuEtc.Visibility = Visibility.Collapsed;
                 TxtMenuSys.Visibility = Visibility.Collapsed;
 
-                // 종료 버튼을 아이콘으로만 표시
                 BtnExit.Content = "⏻";
+            }
+        }
+
+        private void MenuListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (MenuListBox.SelectedItem is ListBoxItem selectedItem)
+            {
+                string? tag = selectedItem.Tag?.ToString();
+
+                switch (tag)
+                {
+                    case "Main":
+                        MainContent.Content = new Views.MainControlView();
+                        break;
+                    case "Bio":
+                        MainContent.Content = new Views.BioControlView();
+                        break;
+                    case "Motion":
+                        MainContent.Content = new Views.MotionControlView();
+                        break;
+                        // (Etc, System 부분은 작성하신 기존 코드 그대로 유지)
+                }
+            }
+
+            // ★ 추가된 로직: 메뉴(아이콘/텍스트)를 클릭해서 화면이 전환되면 오버레이 메뉴를 자동으로 축소시킵니다.
+            if (_isMenuExpanded)
+            {
+                _isMenuExpanded = false;
+                UpdateMenuState();
             }
         }
 

@@ -4,8 +4,8 @@
         xmlns:viewmodels="clr-namespace:NovaniX_EM2.ViewModels"
         xmlns:views="clr-namespace:NovaniX_EM2.Views"
         Title="NovaniX EM2 - Multi Controller" 
-        Height="700" Width="1100" 
-        MinWidth="640" MinHeight="512"
+        Height="1024" Width="1280" 
+        MinWidth="640" MinHeight="700"
         WindowStyle="None" ResizeMode="CanResize"
         WindowStartupLocation="CenterScreen">
 
@@ -61,257 +61,93 @@
                        VerticalAlignment="Center" Margin="10,0,0,0" 
                        RenderOptions.BitmapScalingMode="HighQuality" 
                        MouseLeftButtonDown="Logo_MouseLeftButtonDown" Cursor="Hand"/>
-                
+
                 <TextBlock Text="EM Second Concept System" 
                            Foreground="White" FontSize="20" FontWeight="Bold" 
                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,20,0">
                     <TextBlock Text="{Binding CurrentDateTime}" 
-               Foreground="White" FontSize="16" FontWeight="SemiBold" 
-               Margin="0,0,15,0" VerticalAlignment="Center"/>
-
-                    <Button x:Name="BtnToggleMenu" Content="◀" FontSize="20" Foreground="White" Background="Transparent" 
-            BorderThickness="0" Cursor="Hand" VerticalAlignment="Center" Click="BtnToggleMenu_Click">
-                        <Button.Template>
-                            <ControlTemplate TargetType="Button">
-                                <Border Background="Transparent">
-                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
-                            </ControlTemplate>
-                        </Button.Template>
-                    </Button>
+                               Foreground="White" FontSize="16" FontWeight="SemiBold" 
+                               Margin="0,0,15,0" VerticalAlignment="Center"/>
                 </StackPanel>
             </Grid>
         </Border>
 
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Name="MenuColumn" Width="230"/>
+                <ColumnDefinition Width="65"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            
-            <Border Grid.Column="0" Background="#2C3E50">
+
+            <Grid Grid.Column="1" Background="#ECF0F1">
+                <ContentControl x:Name="MainContent"/>
+            </Grid>
+
+            <Border x:Name="MenuBorder" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Left" Width="65" Panel.ZIndex="10" Background="#1E2A38">
+                <Border.Effect>
+                    <DropShadowEffect Color="Black" Opacity="0.4" BlurRadius="8" ShadowDepth="3" Direction="315"/>
+                </Border.Effect>
+
                 <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="15"/>
+                    </Grid.ColumnDefinitions>
 
-                    <ListBox x:Name="MenuListBox" Grid.Row="0" Background="Transparent" BorderThickness="0" SelectedIndex="0" 
-                             ItemContainerStyle="{StaticResource MenuListItemStyle}" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <Grid Grid.Column="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
 
-                        <ListBoxItem>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="🖥️" Margin="0,0,10,0" FontSize="16"/>
-                                <TextBlock x:Name="TxtMenuMain" Text="Main Control" VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </ListBoxItem>
+                        <ListBox x:Name="MenuListBox" Grid.Row="0" Background="Transparent" BorderThickness="0" Margin="0,15,0,0" SelectionChanged="MenuListBox_SelectionChanged" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                            <ListBox.ItemContainerStyle>
+                                <StaticResource ResourceKey="MenuListItemStyle"/>
+                            </ListBox.ItemContainerStyle>
 
-                        <ListBoxItem>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="🧬" Margin="0,0,10,0" FontSize="16"/>
-                                <TextBlock x:Name="TxtMenuBio" Text="Environment Control" VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </ListBoxItem>
+                            <ListBoxItem IsSelected="True" Tag="Main">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="🏠" FontSize="20" Width="40" TextAlignment="Center" Margin="0,0,10,0"/>
+                                    <TextBlock x:Name="TxtMenuMain" Text="Main View" VerticalAlignment="Center" Visibility="Collapsed"/>
+                                </StackPanel>
+                            </ListBoxItem>
 
-                        <ListBoxItem>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="⚙️" Margin="0,0,10,0" FontSize="16"/>
-                                <TextBlock x:Name="TxtMenuMotion" Text="Motion Control" VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </ListBoxItem>
+                            <ListBoxItem Tag="Bio">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="🧪" FontSize="20" Width="40" TextAlignment="Center" Margin="0,0,10,0"/>
+                                    <TextBlock x:Name="TxtMenuBio" Text="Bio Control" VerticalAlignment="Center" Visibility="Collapsed"/>
+                                </StackPanel>
+                            </ListBoxItem>
 
-                        <ListBoxItem>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="🧩" Margin="0,0,10,0" FontSize="16"/>
-                                <TextBlock x:Name="TxtMenuEtc" Text="Etc Control" VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </ListBoxItem>
+                            <ListBoxItem Tag="Motion">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="⚙️" FontSize="20" Width="40" TextAlignment="Center" Margin="0,0,10,0"/>
+                                    <TextBlock x:Name="TxtMenuMotion" Text="Motion Control" VerticalAlignment="Center" Visibility="Collapsed"/>
+                                </StackPanel>
+                            </ListBoxItem>
 
-                        <ListBoxItem>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="🛠️" Margin="0,0,10,0" FontSize="16"/>
-                                <TextBlock x:Name="TxtMenuSys" Text="System Parameter" VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </ListBoxItem>
+                            <ListBoxItem Tag="Etc">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="🎛️" FontSize="20" Width="40" TextAlignment="Center" Margin="0,0,10,0"/>
+                                    <TextBlock x:Name="TxtMenuEtc" Text="Etc. I/O" VerticalAlignment="Center" Visibility="Collapsed"/>
+                                </StackPanel>
+                            </ListBoxItem>
 
-                    </ListBox>
+                            <ListBoxItem Tag="System">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="🖥️" FontSize="20" Width="40" TextAlignment="Center" Margin="0,0,10,0"/>
+                                    <TextBlock x:Name="TxtMenuSys" Text="System Setup" VerticalAlignment="Center" Visibility="Collapsed"/>
+                                </StackPanel>
+                            </ListBoxItem>
+                        </ListBox>
 
-                    <Button x:Name="BtnExit" Grid.Row="1" Content="⏻ EXIT" Background="#E74C3C" Foreground="White" 
-                            FontSize="16" FontWeight="Bold" Height="55" BorderThickness="0" Cursor="Hand" Click="BtnExit_Click">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Opacity" Value="0.85"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                    </Button>
+                        <Button x:Name="BtnExit" Grid.Row="1" Content="⏻" Height="60" FontSize="20" Margin="5,20,5,20" Background="#D32F2F" Foreground="White" FontWeight="Bold" BorderBrush="Transparent" Click="BtnExit_Click" Cursor="Hand"/>
+                    </Grid>
+
+                    <Button x:Name="BtnToggleMenu" Grid.Column="1" Content="▶" Background="#34495E" Foreground="White" BorderThickness="0" Cursor="Hand" Click="BtnToggleMenu_Click"/>
                 </Grid>
             </Border>
-
-            <Grid Grid.Column="1">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="30"/>
-                </Grid.RowDefinitions>
-
-                <TabControl Grid.Row="0" SelectedIndex="{Binding ElementName=MenuListBox, Path=SelectedIndex}" Background="#121212">
-                    <TabControl.Template>
-                        <ControlTemplate TargetType="TabControl">
-                            <ContentPresenter ContentSource="SelectedContent"/>
-                        </ControlTemplate>
-                    </TabControl.Template>
-                    
-                    <TabItem>
-                        <views:MainControlView />
-                    </TabItem>
-
-                    <TabItem>
-                        <views:BioControlView />
-                    </TabItem>
-
-                    <TabItem>
-                        <views:MotionControlView />
-                    </TabItem>
-
-                    <TabItem>
-                        <Grid>
-                            <TextBlock Text="Etc Machine Control 준비 중..." FontSize="24" FontWeight="SemiBold" Foreground="#999" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Grid>
-                    </TabItem>
-
-                    <TabItem>
-                        <Grid>
-                            <TextBlock Text="System Parameter 준비 중..." FontSize="24" FontWeight="SemiBold" Foreground="#999" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Grid>
-                    </TabItem>
-                </TabControl>
-
-                <StatusBar Grid.Row="1" Background="#0D47A1" Foreground="White" HorizontalAlignment="Stretch">
-
-                    <StatusBar.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                            </Grid>
-                        </ItemsPanelTemplate>
-                    </StatusBar.ItemsPanel>
-
-                    <StatusBarItem Grid.Column="0" Margin="10,0">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="{Binding StatusMessage, FallbackValue='Ready.'}"/>
-
-                            <Separator Background="#3F51B5" Margin="10,0"/>
-
-                            <TextBlock Text="COM Port: "/>
-                            <TextBlock Text="{Binding SelectedPort, TargetNullValue='None'}" FontWeight="Bold"/>
-
-                            <Separator Background="#3F51B5" Margin="10,0"/>
-
-                            <TextBlock Text="⚠ 시스템 알람 발생" Foreground="#FF5252" FontWeight="Bold" 
-                                       Visibility="{Binding IsAlarmed, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                        </StackPanel>
-                    </StatusBarItem>
-
-                    <StatusBarItem Grid.Column="2" Margin="0,0,10,0">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-
-                            <TextBlock Text="PMS_P/C: " VerticalAlignment="Center" Margin="0,0,3,0"/>
-                            <Ellipse Width="12" Height="12" Margin="0,0,15,0" VerticalAlignment="Center" Stroke="#888" StrokeThickness="1" ToolTip="Particle Counter">
-                                <Ellipse.Style>
-                                    <Style TargetType="Ellipse">
-                                        <Setter Property="Fill" Value="#F44336"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsParticleConnected}" Value="True">
-                                                <Setter Property="Fill" Value="#4CAF50"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Ellipse.Style>
-                            </Ellipse>
-
-                            <TextBlock Text="PMS_A/S: " VerticalAlignment="Center" Margin="0,0,3,0"/>
-                            <Ellipse Width="12" Height="12" Margin="0,0,15,0" VerticalAlignment="Center" Stroke="#888" StrokeThickness="1" ToolTip="Air Sampler">
-                                <Ellipse.Style>
-                                    <Style TargetType="Ellipse">
-                                        <Setter Property="Fill" Value="#F44336"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsAirSamplerConnected}" Value="True">
-                                                <Setter Property="Fill" Value="#4CAF50"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Ellipse.Style>
-                            </Ellipse>
-
-                            <TextBlock Text="Motion: " VerticalAlignment="Center" Margin="0,0,3,0"/>
-                            <Ellipse Width="12" Height="12" Margin="0,0,15,0" VerticalAlignment="Center" Stroke="#888" StrokeThickness="1">
-                                <Ellipse.Style>
-                                    <Style TargetType="Ellipse">
-                                        <Setter Property="Fill" Value="#F44336"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsMotionConnected}" Value="True">
-                                                <Setter Property="Fill" Value="#4CAF50"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Ellipse.Style>
-                            </Ellipse>
-
-                            <TextBlock Text="I/O: " VerticalAlignment="Center" Margin="0,0,3,0"/>
-                            <Ellipse Width="12" Height="12" Margin="0,0,15,0" VerticalAlignment="Center" Stroke="#888" StrokeThickness="1">
-                                <Ellipse.Style>
-                                    <Style TargetType="Ellipse">
-                                        <Setter Property="Fill" Value="#F44336"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsIoConnected}" Value="True">
-                                                <Setter Property="Fill" Value="#4CAF50"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Ellipse.Style>
-                            </Ellipse>
-
-                            <TextBlock Text="Gripper: " VerticalAlignment="Center" Margin="0,0,3,0"/>
-                            <Ellipse Width="12" Height="12" Margin="0,0,15,0" VerticalAlignment="Center" Stroke="#888" StrokeThickness="1">
-                                <Ellipse.Style>
-                                    <Style TargetType="Ellipse">
-                                        <Setter Property="Fill" Value="#F44336"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsGripperConnected}" Value="True">
-                                                <Setter Property="Fill" Value="#4CAF50"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Ellipse.Style>
-                            </Ellipse>
-
-                            <TextBlock Text="QR Reader: " VerticalAlignment="Center" Margin="0,0,3,0"/>
-                            <Ellipse Width="12" Height="12" VerticalAlignment="Center" Stroke="#888" StrokeThickness="1">
-                                <Ellipse.Style>
-                                    <Style TargetType="Ellipse">
-                                        <Setter Property="Fill" Value="#F44336"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsQrConnected}" Value="True">
-                                                <Setter Property="Fill" Value="#4CAF50"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Ellipse.Style>
-                            </Ellipse>
-
-                        </StackPanel>
-                    </StatusBarItem>
-                </StatusBar>
-            </Grid>
         </Grid>
     </Grid>
 </Window>

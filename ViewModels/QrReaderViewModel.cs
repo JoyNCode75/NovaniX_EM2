@@ -18,6 +18,9 @@ namespace NovaniX_EM2.ViewModels
 
         private KeyenceQrReader _qrReader;
 
+        // ▼▼▼ MainViewModel에서 이 객체를 가져갈 수 있도록 public 속성 추가 ▼▼▼
+        public KeyenceQrReader QrReaderInstance => _qrReader;
+
         // --- 바인딩 프로퍼티들 ---
         private string _readerIp = "192.168.100.100";
         public string ReaderIp { get => _readerIp; set { _readerIp = value; OnPropertyChanged(nameof(ReaderIp)); } }

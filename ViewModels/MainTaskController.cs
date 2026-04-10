@@ -7,6 +7,8 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows; // Visibility 처리를 위해 추가
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace NovaniX_EM2.Controllers
 {
@@ -229,6 +231,55 @@ namespace NovaniX_EM2.Controllers
         public ICommand ToggleStartStopCommand { get; }
         public ICommand PauseResumeCommand { get; }
 
+        // =========================================================
+        // ★ 추가: QR 리더기 UI 바인딩 프로퍼티 및 장비 인스턴스
+        // =========================================================
+        private string _qrResultStatus = "WAIT";
+        public string QrResultStatus { get => _qrResultStatus; set { _qrResultStatus = value; OnPropertyChanged(); } }
+
+        private SolidColorBrush _qrResultColor = new SolidColorBrush(Colors.Gray);
+        public SolidColorBrush QrResultColor { get => _qrResultColor; set { _qrResultColor = value; OnPropertyChanged(); } }
+
+        private string _qrResultText = "대기 중...";
+        public string QrResultText { get => _qrResultText; set { _qrResultText = value; OnPropertyChanged(); } }
+
+        private ImageSource? _qrImageSource;
+        public ImageSource? QrImageSource { get => _qrImageSource; set { _qrImageSource = value; OnPropertyChanged(); } }
+
+        // MainViewModel에서 주입받을 QR 리더기 인스턴스
+        private KeyenceQrReader? _qrReaderDevice;
+        public KeyenceQrReader? QrReaderDevice
+        {
+            get => _qrReaderDevice;
+            set
+            {
+                _qrReaderDevice = value;
+                if (_qrReaderDevice != null)
+                {
+                    // FTP를 통해 이미지가 생성되면 즉시 UI 이미지 변수에 바인딩
+                    _qrReaderDevice.OnImageReceived += OnQrImageReceived;
+                }
+            }
+        }
+
+        private void OnQrImageReceived(string imagePath)
+        {
+            if (System.Windows.Application.Current == null) return;
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                try
+                {
+                    // BitmapCacheOption.OnLoad를 통해 파일 Lock 방지
+                    var bmp = new BitmapImage();
+                    bmp.BeginInit();
+                    bmp.UriSource = new Uri(imagePath, UriKind.Absolute);
+                    bmp.CacheOption = BitmapCacheOption.OnLoad;
+                    bmp.EndInit();
+                    QrImageSource = bmp;
+                }
+                catch { }
+            });
+        }
         public MainTaskController()
         {
             InitializeCommand = new RelayCommand(_ => ExecuteInitialize());
@@ -908,11 +959,81 @@ namespace NovaniX_EM2.Controllers
 
         private async Task RunQRCodeReadingTaskAsync(CancellationToken token)
         {
-            CurrentTaskName = "Petri QR Code Reading";
-            await MoveQRTableTurnTaskAsync(token, true);
+            CurrentTaskName = "Petri QR Code Reading (턴테이블 회전)";
+            await MoveQRTableTurnTaskAsync(token, false);
 
-            CurrentTaskName = "Petri QR Code Reading (Wait)";
-            await MoveQRTableTurnTaskAsync(token, true);
+            CurrentTaskName = "QR 코드 판독 진행 중...";
+
+            // UI 상태 판독 중으로 초기화
+            QrResultStatus = "READING";
+            QrResultColor = new SolidColorBrush(Colors.Orange);
+            QrResultText = "데이터 수신 대기 중...";
+
+            // 1. 연결 확인
+            if (QrReaderDevice == null || !QrReaderDevice.IsConnected)
+            {
+                QrResultStatus = "NG";
+                // 앞에 System.Windows.Media. 를 붙여 WPF용 색상임을 명확히 합니다.
+                QrResultColor = new SolidColorBrush(System.Windows.Media.Color.FromRgb(244, 67, 54));
+                
+                QrResultText = "오류: QR 리더기가 연결되지 않았습니다.";
+                throw new Exception("QR 리더기가 연결되지 않았습니다.");
+            }
+
+            // 2. 콜백 이벤트를 Task 비동기 흐름으로 전환하기 위한 준비
+            var tcs = new TaskCompletionSource<string>();
+            Action<string> onDataReceivedHandler = (data) => tcs.TrySetResult(data);
+
+            QrReaderDevice.OnDataReceived += onDataReceivedHandler;
+
+            try
+            {
+                // 3. 리더기 트리거 ON 명령어 전송
+                bool triggerSuccess = await QrReaderDevice.TriggerOnAsync();
+                if (!triggerSuccess) throw new Exception("QR 리더기 Trigger ON 명령 전송 실패");
+
+                // 최대 5초 대기 (5초 안에 못 읽으면 타임아웃)
+                using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(token);
+                timeoutCts.CancelAfter(5000);
+
+                using (timeoutCts.Token.Register(() => tcs.TrySetCanceled()))
+                {
+                    // 4. 리더기에서 데이터가 들어올 때까지 대기
+                    string resultData = await tcs.Task;
+
+                    // 5. 수신 결과 UI 반영
+                    if (!string.IsNullOrEmpty(resultData) && !resultData.ToUpper().Contains("ERROR"))
+                    {
+                        QrResultStatus = "OK";
+                        QrResultColor = new SolidColorBrush(System.Windows.Media.Color.FromRgb(76, 175, 80)); // Green
+                        QrResultText = resultData;
+                    }
+                    else
+                    {
+                        QrResultStatus = "NG";
+                        QrResultColor = new SolidColorBrush(System.Windows.Media.Color.FromRgb(244, 67, 54)); // Red
+                        QrResultText = string.IsNullOrEmpty(resultData) ? "판독 실패 (데이터 없음)" : resultData;
+                        // 필요 시 NG일 경우 Exception 발생시켜 공정을 멈추게 할 수도 있습니다.
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // 5초 타임아웃 발생 시
+                QrResultStatus = "NG";
+                QrResultColor = new SolidColorBrush(System.Windows.Media.Color.FromRgb(244, 67, 54)); // Red
+                QrResultText = "판독 타임아웃 (Timeout)";
+                throw new Exception("QR 코드 판독 타임아웃 에러");
+            }
+            finally
+            {
+                // 6. 종료 처리: 이벤트 연결 해제 및 트리거 OFF
+                QrReaderDevice.OnDataReceived -= onDataReceivedHandler;
+                await QrReaderDevice.TriggerOffAsync();
+            }
+
+            CurrentTaskName = "Petri QR Code Reading 완료";
+            await Task.Delay(1000, token); // 결과 확인을 위해 잠시 대기
         }
 
         private async Task RunPetriToSamplerLoadingTaskAsync(CancellationToken token)

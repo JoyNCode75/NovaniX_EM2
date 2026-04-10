@@ -1982,6 +1982,11 @@ namespace NovaniX_EM2.ViewModels
 
             TaskController = new MainTaskController();
 
+            // ====================================================================
+            // ▼▼▼ 여기에 방금 만든 QrReaderInstance를 TaskController로 넘겨줍니다! ▼▼▼
+            TaskController.QrReaderDevice = this.QrReaderVm.QrReaderInstance;
+            // ====================================================================
+
             // ★ 1초마다 시간 업데이트 (추가된 코드)
             // ★ 수정 1: CS4014 경고 해결 (_ = 할당으로 의도적 백그라운드 실행 명시)
             _ = Task.Run(async () =>
@@ -2241,6 +2246,10 @@ namespace NovaniX_EM2.ViewModels
             // 폴링 타이머 설정 (0.1초마다 입력 상태 모니터링)
             _ioTimer.Interval = TimeSpan.FromMilliseconds(100);
             _ioTimer.Tick += async (s, e) => await PollIoDataAsync();
+            #endregion
+
+            #region [ Keyences SR X300 Reader Control Initialization ]
+
             #endregion
         }
 
