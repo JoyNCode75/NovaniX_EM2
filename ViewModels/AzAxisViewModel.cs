@@ -169,7 +169,7 @@ namespace NovaniX_EM2.ViewModels
                     // 방어 코드: 체크박스가 해제되어 있으면 에러 처리 후 이벤트 취소
                     if (!clickedItem.IsUsed)
                     {
-                        MessageBox.Show($"[{clickedItem.Name}] 항목이 비활성화 상태입니다.\n먼저 체크박스를 선택해 주세요.",
+                        System.Windows.MessageBox.Show($"[{clickedItem.Name}] 항목이 비활성화 상태입니다.\n먼저 체크박스를 선택해 주세요.",
                                         "선택 불가", MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
@@ -202,7 +202,7 @@ namespace NovaniX_EM2.ViewModels
                 {
                     StatusColor = "#F44336"; // 에러: 빨간색
                     StatusMessage = "[에러] 선택된 포지션이 없습니다.";
-                    MessageBox.Show("선택된 포지션이 없습니다.\n포지션 이름을 더블클릭하여 먼저 선택해 주세요.", "위치값 설정 에러", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    System.Windows.MessageBox.Show("선택된 포지션이 없습니다.\n포지션 이름을 더블클릭하여 먼저 선택해 주세요.", "위치값 설정 에러", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -210,7 +210,7 @@ namespace NovaniX_EM2.ViewModels
                 {
                     StatusColor = "#F44336"; // 에러: 빨간색
                     StatusMessage = "[에러] 여러 개의 포지션이 선택되었습니다.";
-                    MessageBox.Show("여러 개의 포지션이 선택되었습니다.\n하나의 포지션만 선택해 주세요.", "위치값 설정 에러", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    System.Windows.MessageBox.Show("여러 개의 포지션이 선택되었습니다.\n하나의 포지션만 선택해 주세요.", "위치값 설정 에러", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -220,7 +220,7 @@ namespace NovaniX_EM2.ViewModels
                 {
                     StatusColor = "#F44336"; // 에러: 빨간색
                     StatusMessage = $"[에러] '{targetPosition.Name}' 사용 안 함 상태입니다.";
-                    MessageBox.Show($"[{targetPosition.Name}] 항목이 사용 안 함 상태입니다.\n좌측의 체크박스를 먼저 체크해 주세요.", "위치값 설정 에러", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    System.Windows.MessageBox.Show($"[{targetPosition.Name}] 항목이 사용 안 함 상태입니다.\n좌측의 체크박스를 먼저 체크해 주세요.", "위치값 설정 에러", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -325,7 +325,7 @@ namespace NovaniX_EM2.ViewModels
 
             if (targetPos < SoftLimitMin || targetPos > SoftLimitMax)
             {
-                MessageBox.Show($"이동 불가: 범위({SoftLimitMin} ~ {SoftLimitMax}) 초과.", "경고", MessageBoxButton.OK, MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show($"이동 불가: 범위({SoftLimitMin} ~ {SoftLimitMax}) 초과.", "경고", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -423,7 +423,7 @@ namespace NovaniX_EM2.ViewModels
         {
             if (targetPosition < SoftLimitMin || targetPosition > SoftLimitMax)
             {
-                MessageBox.Show($"이동 불가: 입력한 위치({targetPosition})가 SW Limit 설정 범위를 벗어났습니다.", "SW Limit 알림", MessageBoxButton.OK, MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show($"이동 불가: 입력한 위치({targetPosition})가 SW Limit 설정 범위를 벗어났습니다.", "SW Limit 알림", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
             await ExecuteCommandAsync(() => _motor.MoveAbsoluteAsync(0, targetPosition, speed));

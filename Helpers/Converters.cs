@@ -12,9 +12,9 @@ namespace NovaniX_EM2.Helpers
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is bool isAlarmed && isAlarmed)
-                return Brushes.Red; // 알람 발생 시 빨간색
+                return System.Windows.Media.Brushes.Red; // ▼ WPF용 빨간색으로 명확히 지정
 
-            return Brushes.Green; // 정상 시 초록색
+            return System.Windows.Media.Brushes.Green; // ▼ WPF용 초록색으로 명확히 지정
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

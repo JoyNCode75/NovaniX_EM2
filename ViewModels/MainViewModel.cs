@@ -94,7 +94,6 @@ namespace NovaniX_EM2.ViewModels
         public string IntervalTime { get; set; } = string.Empty;
     }
 
-
     public class MainViewModel : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler? PropertyChanged; // 여긴 ?를 붙여줍니다.
@@ -108,6 +107,9 @@ namespace NovaniX_EM2.ViewModels
 
         // UI에서 바인딩할 Task Controller
         public MainTaskController TaskController { get; } = new MainTaskController();
+        // ▼▼▼ 여기에 QrReaderViewModel 속성을 추가합니다. ▼▼▼
+        public QrReaderViewModel QrReaderVm { get; } = new QrReaderViewModel();
+        // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
         private int _baudRate = 115200;
         public int BaudRate { get => _baudRate; set { _baudRate = value; OnPropertyChanged(); } }
@@ -196,7 +198,7 @@ namespace NovaniX_EM2.ViewModels
             int portNo = 0;
             if (string.IsNullOrEmpty(SelectedPort)) // 바인딩된 포트 프로퍼티명 확인
             {
-                MessageBox.Show("포트를 선택해 주세요.", "알림", MessageBoxButton.OK, MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show("포트를 선택해 주세요.", "알림", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -231,7 +233,7 @@ namespace NovaniX_EM2.ViewModels
                         axis.SetCommIndex(_azCommIndex);
                     }
 
-                    MessageBox.Show("AZ 모터 통신 연결 성공!", "알림", MessageBoxButton.OK, MessageBoxImage.Information);
+                    System.Windows.MessageBox.Show("AZ 모터 통신 연결 성공!", "알림", MessageBoxButton.OK, MessageBoxImage.Information);
 
                     // 필요 시 상태 갱신 타이머 시작
                     // StartStatusMonitor();
@@ -239,7 +241,7 @@ namespace NovaniX_EM2.ViewModels
                 else
                 {
                     IsConnected = false;
-                    MessageBox.Show($"모터 초기화 실패 (Port: {portNo})", "연결 에러", MessageBoxButton.OK, MessageBoxImage.Error);
+                    System.Windows.MessageBox.Show($"모터 초기화 실패 (Port: {portNo})", "연결 에러", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
 
                 IsConnected = (result == 1 && _azCommIndex >= 0);
@@ -257,13 +259,13 @@ namespace NovaniX_EM2.ViewModels
                 }
                 else
                 {
-                    MessageBox.Show($"AZ 모터 통신 포트({SelectedPort}) 열기에 실패했습니다.\n에러코드: {result}",
+                    System.Windows.MessageBox.Show($"AZ 모터 통신 포트({SelectedPort}) 열기에 실패했습니다.\n에러코드: {result}",
                                     "연결 오류", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             else
             {
-                MessageBox.Show("유효한 COM 포트 정보를 찾을 수 없습니다.", "설정 오류", MessageBoxButton.OK, MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show("유효한 COM 포트 정보를 찾을 수 없습니다.", "설정 오류", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
@@ -303,7 +305,7 @@ namespace NovaniX_EM2.ViewModels
                 // ==========================================
                 if (string.IsNullOrEmpty(SelectedPort))
                 {
-                    MessageBox.Show("포트를 선택해 주세요.", "알림", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    System.Windows.MessageBox.Show("포트를 선택해 주세요.", "알림", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -337,13 +339,13 @@ namespace NovaniX_EM2.ViewModels
                     }
                     else
                     {
-                        MessageBox.Show($"모터 통신 연결 실패 (Port: COM{portNumber})\n모터 전원 및 케이블 연결 상태를 확인하세요.",
+                        System.Windows.MessageBox.Show($"모터 통신 연결 실패 (Port: COM{portNumber})\n모터 전원 및 케이블 연결 상태를 확인하세요.",
                                         "연결 에러", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
                 else
                 {
-                    MessageBox.Show("올바른 COM 포트를 선택해 주세요.", "입력 에러", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    System.Windows.MessageBox.Show("올바른 COM 포트를 선택해 주세요.", "입력 에러", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
         }
@@ -453,7 +455,7 @@ namespace NovaniX_EM2.ViewModels
                             IsAlarmed = false;
                         }
 
-                        Application.Current?.Dispatcher.Invoke(() =>
+                        System.Windows.Application.Current?.Dispatcher.Invoke(() =>
                         {
                             if (MotionAxes.Count > 0)
                                 CurrentPositionPct = MotionAxes[0].CurrentPosition / 10.0;
@@ -620,7 +622,7 @@ namespace NovaniX_EM2.ViewModels
             JsonHelper.Save(motionFilePath, sysParam);
             JsonHelper.Save(posFilePath, posParams);
 
-            if (showPopup) MessageBox.Show("전체 파라미터 및 포지션 데이터가 성공적으로 저장되었습니다.", "저장 완료", MessageBoxButton.OK, MessageBoxImage.Information);
+            if (showPopup) System.Windows.MessageBox.Show("전체 파라미터 및 포지션 데이터가 성공적으로 저장되었습니다.", "저장 완료", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         // ▼ 추가된 코드: 선택한 단일 축의 파라미터 및 포지션만 기존 JSON 파일에 덮어쓰기 저장 ▼
@@ -671,7 +673,7 @@ namespace NovaniX_EM2.ViewModels
             JsonHelper.Save(motionFilePath, sysParam);
 
             // POSITION.json 갱신 생략 (기존 코드와 동일하게 처리해 주시면 됩니다.)
-            MessageBox.Show($"[{nameToSave}] 축 데이터가 개별 저장되었습니다.", "개별 저장 완료", MessageBoxButton.OK, MessageBoxImage.Information);
+            System.Windows.MessageBox.Show($"[{nameToSave}] 축 데이터가 개별 저장되었습니다.", "개별 저장 완료", MessageBoxButton.OK, MessageBoxImage.Information);
         }
         #endregion
 
@@ -810,7 +812,7 @@ namespace NovaniX_EM2.ViewModels
                         int rotInitStatus = await _deviceState.ReadRegisterAsync(0x020A); // 회전 초기화 상태 (0x020A)
                         int rawRotAngle = await _deviceState.ReadRegisterAsync(0x0208);   // 회전 절대 각도 (0x0208)
 
-                        Application.Current?.Dispatcher.Invoke(() =>
+                        System.Windows.Application.Current?.Dispatcher.Invoke(() =>
                         {
                             // ★ 로직 반영: 전체 초기화(initStatus == 1) 시 Clamp/Rotate UI 플래그 모두 True
                             IsGripperInitialized = (initStatus == 1);
@@ -918,7 +920,7 @@ namespace NovaniX_EM2.ViewModels
             };
 
             JsonHelper.Save(gripperFilePath, param);
-            if (showPopup) MessageBox.Show("그리퍼 통신 설정이 저장되었습니다.", "저장 완료");
+            if (showPopup) System.Windows.MessageBox.Show("그리퍼 통신 설정이 저장되었습니다.", "저장 완료");
         }
         #endregion
 
@@ -1030,14 +1032,14 @@ namespace NovaniX_EM2.ViewModels
                 {
                     IsParticleConnected = false;
                     StatusMessage = "[에러] Particle Counter 연결 실패";
-                    MessageBox.Show("IP나 포트를 확인해주세요. 접속을 거부했습니다.", "접속 실패", MessageBoxButton.OK, MessageBoxImage.Error);
+                    System.Windows.MessageBox.Show("IP나 포트를 확인해주세요. 접속을 거부했습니다.", "접속 실패", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)
             {
                 IsParticleConnected = false;
                 StatusMessage = $"[에러] {ex.Message}";
-                MessageBox.Show($"상세오류: {ex.Message}", "접속 에러", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"상세오류: {ex.Message}", "접속 에러", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -1091,7 +1093,7 @@ namespace NovaniX_EM2.ViewModels
             {
                 DisconnectParticle();
                 StatusMessage = $"[통신 끊김] Particle: {ex.Message}";
-                MessageBox.Show("Particle Counter와의 통신이 끊어졌습니다.", "오류", MessageBoxButton.OK, MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show("Particle Counter와의 통신이 끊어졌습니다.", "오류", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
@@ -1104,7 +1106,7 @@ namespace NovaniX_EM2.ViewModels
             double.TryParse(this.Part05_Sum.Replace(",", ""), out double val05);
             double.TryParse(this.Part50_Sum.Replace(",", ""), out double val50);
 
-            Application.Current.Dispatcher.Invoke(() =>
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
                 ParticleCounterDataList.Add(new ParticleDataModel
                 {
@@ -1158,7 +1160,7 @@ namespace NovaniX_EM2.ViewModels
                     }
 
                     // 상태가 바뀔 때마다 Start/Stop 버튼의 활성화 상태 즉시 갱신
-                    Application.Current?.Dispatcher.InvokeAsync(() =>
+                    System.Windows.Application.Current?.Dispatcher.InvokeAsync(() =>
                         System.Windows.Input.CommandManager.InvalidateRequerySuggested());
                 }
             }
@@ -1312,14 +1314,14 @@ namespace NovaniX_EM2.ViewModels
                 {
                     IsAirSamplerConnected = false;
                     StatusMessage = "[에러] Air Sampler 연결 실패";
-                    MessageBox.Show("IP나 포트를 확인해주세요. 접속을 거부했습니다.", "접속 실패", MessageBoxButton.OK, MessageBoxImage.Error);
+                    System.Windows.MessageBox.Show("IP나 포트를 확인해주세요. 접속을 거부했습니다.", "접속 실패", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)
             {
                 IsAirSamplerConnected = false;
                 StatusMessage = $"[에러] {ex.Message}";
-                MessageBox.Show($"상세오류: {ex.Message}", "접속 에러", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"상세오류: {ex.Message}", "접속 에러", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -1396,7 +1398,7 @@ namespace NovaniX_EM2.ViewModels
             {
                 DisconnectAirSampler();
                 StatusMessage = $"[통신 끊김] Air Sampler: {ex.Message}";
-                MessageBox.Show("Air Sampler와의 통신이 끊어졌습니다.", "오류", MessageBoxButton.OK, MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show("Air Sampler와의 통신이 끊어졌습니다.", "오류", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
@@ -1406,7 +1408,7 @@ namespace NovaniX_EM2.ViewModels
         {
             await PollAirSamplerDataAsync();
 
-            Application.Current.Dispatcher.Invoke(() =>
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
                 AirSamplerDataList.Add(new AirSamplerDataModel
                 {
@@ -1484,7 +1486,7 @@ namespace NovaniX_EM2.ViewModels
                     }
 
                     // 상태가 바뀔 때마다 Start/Stop 버튼의 활성화 상태 즉시 갱신
-                    Application.Current?.Dispatcher.InvokeAsync(() =>
+                    System.Windows.Application.Current?.Dispatcher.InvokeAsync(() =>
                         System.Windows.Input.CommandManager.InvalidateRequerySuggested());
                 }
             }
@@ -1723,7 +1725,7 @@ namespace NovaniX_EM2.ViewModels
 
             if (showPopup)
             {
-                MessageBox.Show("PMS 설정 파라미터가 성공적으로 저장되었습니다.", "저장 완료", MessageBoxButton.OK, MessageBoxImage.Information);
+                System.Windows.MessageBox.Show("PMS 설정 파라미터가 성공적으로 저장되었습니다.", "저장 완료", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
         #endregion
@@ -1790,9 +1792,9 @@ namespace NovaniX_EM2.ViewModels
                     IsIoConnected = true;
                     _ioTimer.Start();
                 }
-                else MessageBox.Show("I/O 모듈 연결에 실패했습니다.");
+                else System.Windows.MessageBox.Show("I/O 모듈 연결에 실패했습니다.");
             }
-            catch (Exception ex) { MessageBox.Show(ex.Message); }
+            catch (Exception ex) { System.Windows.MessageBox.Show(ex.Message); }
         }
 
         private void DisconnectIo()
@@ -1895,7 +1897,7 @@ namespace NovaniX_EM2.ViewModels
                 ioParam.Output.Items.Add(new IoItemInfo { Number = output.Number, Name = output.Name, IsUse = output.IsUse });
 
             JsonHelper.Save(ioFilePath, ioParam);
-            if (showPopup) MessageBox.Show("I/O 설정이 저장되었습니다.", "저장 완료");
+            if (showPopup) System.Windows.MessageBox.Show("I/O 설정이 저장되었습니다.", "저장 완료");
         }
 
         // 개별 페이지 업데이트 함수
@@ -1968,9 +1970,9 @@ namespace NovaniX_EM2.ViewModels
             }
 
             // ★ 프로그램 종료 시 자동으로 두 JSON 파일 저장
-            if (Application.Current != null)
+            if (System.Windows.Application.Current != null)
             {
-                Application.Current.Exit += (s, e) =>
+                System.Windows.Application.Current.Exit += (s, e) =>
                 {
                     SaveParameters(showPopup: false);
                     // ▼ 추가: 프로그램 종료 시 PMS 파라미터도 자동 저장
@@ -2004,7 +2006,7 @@ namespace NovaniX_EM2.ViewModels
             // ★ 새로 추가할 부분: 그리퍼 전용 불러오기 커맨드 연결
             LoadGripperCommand = new RelayCommand(_ => {
                 LoadGripperParameters();
-                MessageBox.Show("그리퍼 설정 및 파라미터를 불러왔습니다.", "불러오기 완료", MessageBoxButton.OK, MessageBoxImage.Information);
+                System.Windows.MessageBox.Show("그리퍼 설정 및 파라미터를 불러왔습니다.", "불러오기 완료", MessageBoxButton.OK, MessageBoxImage.Information);
             });
 
             LoadGripperParameters(); // 프로그램 시작 시 그리퍼 설정 로드
@@ -2039,7 +2041,7 @@ namespace NovaniX_EM2.ViewModels
             LoadParametersCommand = new RelayCommand(_ =>
             {
                 LoadParameters();
-                MessageBox.Show("전체 파라미터 및 포지션 데이터를 불러왔습니다.", "불러오기 완료", MessageBoxButton.OK, MessageBoxImage.Information);
+                System.Windows.MessageBox.Show("전체 파라미터 및 포지션 데이터를 불러왔습니다.", "불러오기 완료", MessageBoxButton.OK, MessageBoxImage.Information);
             });
 
             // ▼ 추가: PMS 파라미터 저장 커맨드 초기화 및 초기 로딩 실행
@@ -2072,7 +2074,7 @@ namespace NovaniX_EM2.ViewModels
 
                         if (!success)
                         {
-                            MessageBox.Show($"축 {slaveId}번의 원점 복귀가 실패하여, 전체 Home 진행을 중단합니다.", "Home All 중단", MessageBoxButton.OK, MessageBoxImage.Error);
+                            System.Windows.MessageBox.Show($"축 {slaveId}번의 원점 복귀가 실패하여, 전체 Home 진행을 중단합니다.", "Home All 중단", MessageBoxButton.OK, MessageBoxImage.Error);
                             allSuccess = false;
                             break; // 실패 시 다음 축 진행 중단
                         }
@@ -2084,7 +2086,7 @@ namespace NovaniX_EM2.ViewModels
 
                 if (allSuccess)
                 {
-                    MessageBox.Show("모든 축의 원점 복귀 및 SD 파라미터 리딩이 완료되었습니다.", "All Home 완료", MessageBoxButton.OK, MessageBoxImage.Information);
+                    System.Windows.MessageBox.Show("모든 축의 원점 복귀 및 SD 파라미터 리딩이 완료되었습니다.", "All Home 완료", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             });
 
@@ -2214,7 +2216,7 @@ namespace NovaniX_EM2.ViewModels
             #region [ Fastech I/O Control Initialization ]
             // 생성자(MainViewModel) 내부의 IO 초기화 및 페이징 커맨드를 아래와 같이 분리합니다.
             SaveIoCommand = new RelayCommand(_ => SaveIoParameters(showPopup: true));
-            LoadIoCommand = new RelayCommand(_ => { LoadIoParameters(); MessageBox.Show("I/O 설정을 불러왔습니다.", "알림", MessageBoxButton.OK, MessageBoxImage.Information); });
+            LoadIoCommand = new RelayCommand(_ => { LoadIoParameters(); System.Windows.MessageBox.Show("I/O 설정을 불러왔습니다.", "알림", MessageBoxButton.OK, MessageBoxImage.Information); });
 
             // Input 페이징 커맨드
             PrevInputPageCommand = new RelayCommand(_ => { if (_currentInputPage > 0) { _currentInputPage--; UpdateInputPage(); } });

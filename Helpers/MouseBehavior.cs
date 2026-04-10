@@ -63,7 +63,7 @@ namespace NovaniX_EM2.Helpers
             ExecuteMouseUpCommand(sender);
         }
 
-        private static void Element_MouseLeave(object sender, MouseEventArgs e)
+        private static void Element_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
         {
             // 마우스 왼쪽 버튼을 누른 상태로 버튼 영역을 벗어나면 강제로 Stop 커맨드 실행
             if (e.LeftButton == MouseButtonState.Pressed)

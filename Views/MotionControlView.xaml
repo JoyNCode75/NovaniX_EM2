@@ -643,6 +643,51 @@
                     </TabControl>
                 </Grid>
             </TabItem>
+            <TabItem Header="QR 리더기 제어" FontSize="14" FontWeight="Bold" DataContext="{Binding QrReaderVm}">
+                <Grid Margin="15">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+                        <TextBlock Text="리더기 IP :" VerticalAlignment="Center" FontWeight="Bold" Margin="0,0,10,0"/>
+                        <TextBox Text="{Binding ReaderIp}" Width="120" Height="28" VerticalContentAlignment="Center" Margin="0,0,15,0" IsEnabled="{Binding IsConnected, Converter={StaticResource InverseBoolConverter}}"/>
+
+                        <TextBlock Text="Port :" VerticalAlignment="Center" FontWeight="Bold" Margin="0,0,10,0"/>
+                        <TextBox Text="{Binding ReaderPort}" Width="60" Height="28" VerticalContentAlignment="Center" Margin="0,0,20,0" IsEnabled="{Binding IsConnected, Converter={StaticResource InverseBoolConverter}}"/>
+
+                        <Button Content="Connect" Command="{Binding ConnectCommand}" Width="90" Height="28" Margin="0,0,10,0" Background="#E3F2FD" FontWeight="Bold"/>
+                        <Button Content="Disconnect" Command="{Binding DisconnectCommand}" Width="90" Height="28" Margin="0,0,30,0" Background="#FFCDD2" FontWeight="Bold"/>
+
+                        <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="0,0,20,0"/>
+
+                        <Button Content="TRIGGER (읽기)" Command="{Binding TriggerCommand}" Width="130" Height="30" Background="#4CAF50" Foreground="White" FontWeight="Bold"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,20">
+                        <TextBlock Text="FTP 수신 폴더 (모니터링) :" VerticalAlignment="Center" FontWeight="Bold" Margin="0,0,10,0"/>
+                        <TextBox Text="{Binding FtpFolderPath}" Width="300" Height="28" VerticalContentAlignment="Center" Margin="0,0,10,0"/>
+                        <Button Content="감시 시작/적용" Command="{Binding SetFolderCommand}" Width="100" Height="28" Background="#FFF3E0" FontWeight="Bold"/>
+                    </StackPanel>
+
+                    <GroupBox Grid.Row="2" Header="판독 결과 및 이미지 (FTP Auto-Load)" FontWeight="Bold" FontSize="14" BorderBrush="#007ACC">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0" BorderBrush="Gray" BorderThickness="1" Width="400" Height="300" HorizontalAlignment="Left" Margin="10" Background="#E0E0E0">
+                                <Image Source="{Binding ReceivedImage}" Stretch="Uniform" />
+                            </Border>
+
+                            <TextBox Grid.Column="1" Text="{Binding ReceivedDataText}" IsReadOnly="True" VerticalScrollBarVisibility="Auto" Margin="10" AcceptsReturn="True" Background="#F5F5F5" FontSize="15" Padding="5"/>
+                        </Grid>
+                    </GroupBox>
+                </Grid>
+            </TabItem>
         </TabControl>
     </Grid>
 </UserControl>

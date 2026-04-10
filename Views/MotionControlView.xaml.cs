@@ -16,11 +16,12 @@ using NovaniX_EM2.ViewModels;
 
 namespace NovaniX_EM2.Views
 {
-    public partial class MotionControlView : UserControl
+    public partial class MotionControlView : System.Windows.Controls.UserControl
     {
         public MotionControlView()
         {
             InitializeComponent();
+
         }
 
         // DataContext를 현재 선택된 AzAxisViewModel로 캐스팅하여 명령 실행

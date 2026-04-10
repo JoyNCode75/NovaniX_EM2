@@ -18,7 +18,7 @@ namespace NovaniX_EM2.Views
     /// <summary>
     /// MainControlView.xaml에 대한 상호 작용 논리
     /// </summary>
-    public partial class MainControlView : UserControl
+    public partial class MainControlView : System.Windows.Controls.UserControl
     {
         public MainControlView()
         {
