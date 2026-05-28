@@ -79,8 +79,8 @@ namespace NovaniX_EM2.ViewModels
         public string StartTime { get; set; } = string.Empty;
         public string EndTime { get; set; } = string.Empty;
         public string ElapsedTime { get; set; } = string.Empty;
-        public string Part05_Sum { get; set; } = string.Empty;
-        public string Part50_Sum { get; set; } = string.Empty;
+        public string ParticleLow { get; set; } = string.Empty;
+        public string ParticleHigh { get; set; } = string.Empty;
     }
 
     // ★ DataGrid에 표시할 에어샘플러 결과 데이터 클래스
@@ -1113,8 +1113,8 @@ namespace NovaniX_EM2.ViewModels
                     StartTime = this.ParticleStartTime,
                     EndTime = this.ParticleEndTime,
                     ElapsedTime = this.ParticleElapsedTime,
-                    Part05_Sum = this.Part05_Sum,
-                    Part50_Sum = this.Part50_Sum
+                    ParticleLow = this.Part05_Sum,
+                    ParticleHigh = this.Part50_Sum
                 });
 
                 // 🟢 LiveChart에 데이터 추가
