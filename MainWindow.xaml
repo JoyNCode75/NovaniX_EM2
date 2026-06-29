@@ -127,13 +127,13 @@
                                 </StackPanel>
                             </ListBoxItem>
 
-                            <ListBoxItem Tag="Etc">
+                            <ListBoxItem Tag="AMR" Cursor="">
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="🎛️" FontSize="20" Width="40" TextAlignment="Center" Margin="0,0,10,0"/>
-                                    <TextBlock x:Name="TxtMenuEtc" Text="Etc. I/O" VerticalAlignment="Center" Visibility="Collapsed"/>
+                                    <TextBlock Text="🤖" FontSize="20" Width="40" TextAlignment="Center" Margin="0,0,10,0"/>
+                                    <TextBlock x:Name="TxtMenuAmr" Text="AMR Control" VerticalAlignment="Center" Visibility="Collapsed"/>
                                 </StackPanel>
                             </ListBoxItem>
-
+                            
                             <ListBoxItem Tag="System">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="🖥️" FontSize="20" Width="40" TextAlignment="Center" Margin="0,0,10,0"/>

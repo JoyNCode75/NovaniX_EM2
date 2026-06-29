@@ -80,7 +80,7 @@ namespace NovaniX_EM2
                 TxtMenuMain.Visibility = Visibility.Visible;
                 TxtMenuBio.Visibility = Visibility.Visible;
                 TxtMenuMotion.Visibility = Visibility.Visible;
-                TxtMenuEtc.Visibility = Visibility.Visible;
+                TxtMenuAmr.Visibility = Visibility.Visible;
                 TxtMenuSys.Visibility = Visibility.Visible;
 
                 BtnExit.Content = "⏻ EXIT";
@@ -95,7 +95,7 @@ namespace NovaniX_EM2
                 TxtMenuMain.Visibility = Visibility.Collapsed;
                 TxtMenuBio.Visibility = Visibility.Collapsed;
                 TxtMenuMotion.Visibility = Visibility.Collapsed;
-                TxtMenuEtc.Visibility = Visibility.Collapsed;
+                TxtMenuAmr.Visibility = Visibility.Collapsed;
                 TxtMenuSys.Visibility = Visibility.Collapsed;
 
                 BtnExit.Content = "⏻";
@@ -119,7 +119,9 @@ namespace NovaniX_EM2
                     case "Motion":
                         MainContent.Content = new Views.MotionControlView();
                         break;
-                        // (Etc, System 부분은 작성하신 기존 코드 그대로 유지)
+                    case "AMR":
+                        MainContent.Content = new Views.AmrControlView();
+                        break;
                 }
             }
 

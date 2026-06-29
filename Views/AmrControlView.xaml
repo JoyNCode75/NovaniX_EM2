@@ -1,0 +1,49 @@
+﻿<UserControl x:Class="NovaniX_EM2.Views.AmrControlView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:comm="clr-namespace:NovaniX_EM2.Communication"
+             Background="White">
+    <Grid Margin="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.Column="0" Margin="0,0,20,0" DataContext="{x:Static comm:SeerAmrController.Instance}">
+            <TextBlock Text="AMR 상세 제어 및 모니터링" FontSize="20" FontWeight="Bold" Margin="0,0,0,20"/>
+
+            <Border BorderBrush="Gray" BorderThickness="1" Padding="15" Margin="0,0,0,20" CornerRadius="5">
+                <StackPanel>
+                    <TextBlock Text="통신 상태" FontWeight="Bold" Margin="0,0,0,10"/>
+                    <TextBlock Text="{Binding IsStatusConnected, StringFormat={}상태 포트(19204): {0}}" />
+                    <TextBlock Text="{Binding IsControlConnected, StringFormat={}제어 포트(19205): {0}}" Margin="0,5,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="제어 로그" FontWeight="Bold" Margin="0,0,0,5"/>
+            <TextBox Height="200" Text="{Binding LogMessage, Mode=OneWay}" IsReadOnly="True" VerticalScrollBarVisibility="Auto" Background="#F0F0F0"/>
+        </StackPanel>
+
+        <StackPanel Grid.Column="1">
+            <GroupBox Header="수동 이동 제어 (조이스틱)" Margin="0,0,0,20" Padding="10">
+                <StackPanel>
+                    <ComboBox x:Name="cbDriveMode" SelectionChanged="CbDriveMode_SelectionChanged" Margin="0,0,0,15">
+                        <ComboBoxItem Content="차동 구동 모드 (SRC-880-T)" IsSelected="True"/>
+                        <ComboBoxItem Content="쌍타발 전방향 모드 (SRC-1100)"/>
+                    </ComboBox>
+
+                    <TextBlock Text="Vx (전진/후진 속도 m/s):" Margin="0,0,0,5"/>
+                    <Slider x:Name="sdVx" Minimum="-1.0" Maximum="1.0" ValueChanged="Slider_ValueChanged" IsSnapToTickEnabled="True" TickFrequency="0.1" Margin="0,0,0,15"/>
+
+                    <TextBlock Text="Vy (좌우 이동 속도 m/s):" Margin="0,0,0,5"/>
+                    <Slider x:Name="sdVy" Minimum="-1.0" Maximum="1.0" ValueChanged="Slider_ValueChanged" IsSnapToTickEnabled="True" TickFrequency="0.1" Margin="0,0,0,15" IsEnabled="False"/>
+
+                    <TextBlock Text="W (회전 각속도 rad/s):" Margin="0,0,0,5"/>
+                    <Slider x:Name="sdW" Minimum="-0.5" Maximum="0.5" ValueChanged="Slider_ValueChanged" IsSnapToTickEnabled="True" TickFrequency="0.05" Margin="0,0,0,15"/>
+
+                    <Button Content="즉시 정지 (API 2000)" Click="BtnStop_Click" Height="40" Background="DarkRed" Foreground="White" FontWeight="Bold"/>
+                </StackPanel>
+            </GroupBox>
+        </StackPanel>
+    </Grid>
+</UserControl>
