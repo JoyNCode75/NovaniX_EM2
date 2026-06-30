@@ -1,4 +1,6 @@
-﻿using System;
+﻿using NovaniX_EM2.Models;
+using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
@@ -6,19 +8,21 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Media;
 
 namespace NovaniX_EM2.Communication
 {
     public class SeerAmrController : INotifyPropertyChanged
     {
         // 글로벌 싱글톤 인스턴스
-        private static SeerAmrController _instance;
+        private static SeerAmrController? _instance; // ? 추가
         public static SeerAmrController Instance => _instance ?? (_instance = new SeerAmrController());
 
-        private TcpClient _statusClient;
-        private NetworkStream _statusStream;
-        private TcpClient _controlClient;
-        private NetworkStream _controlStream;
+        private TcpClient? _statusClient;     // ? 추가
+        private NetworkStream? _statusStream; // ? 추가
+        private TcpClient? _controlClient;    // ? 추가
+        private NetworkStream? _controlStream;// ? 추가
+        
         private ushort _sequenceNumber = 1;
 
         // 바인딩용 프로퍼티
@@ -55,6 +59,27 @@ namespace NovaniX_EM2.Communication
         {
             get => _posY;
             set { _posY = value; OnPropertyChanged(); }
+        }
+
+        private double _speedVx;
+        public double SpeedVx
+        {
+            get => _speedVx;
+            set { _speedVx = value; OnPropertyChanged(); }
+        }
+
+        private double _speedVy;
+        public double SpeedVy
+        {
+            get => _speedVy;
+            set { _speedVy = value; OnPropertyChanged(); }
+        }
+
+        private double _speedW;
+        public double SpeedW
+        {
+            get => _speedW;
+            set { _speedW = value; OnPropertyChanged(); }
         }
 
         private string _logMessage = "";
@@ -144,12 +169,16 @@ namespace NovaniX_EM2.Communication
 
         private async Task ReceiveStatusLoopAsync()
         {
+            // 1. 혹시 모를 예외를 방지하기 위해 시작 전 방어 코드 추가
+            if (_statusStream == null) return;
+
             byte[] headerBuffer = new byte[16];
             try
             {
                 while (IsStatusConnected)
                 {
-                    int bytesRead = await _statusStream.ReadAsync(headerBuffer, 0, 16);
+                    // 2. 컴파일러에게 "절대 null이 아님"을 알리는 ! 연산자 사용
+                    int bytesRead = await _statusStream!.ReadAsync(headerBuffer, 0, 16);
                     if (bytesRead < 16) break;
                     if (headerBuffer[0] != 0x5A) continue;
 
@@ -160,7 +189,8 @@ namespace NovaniX_EM2.Communication
                     int totalRead = 0;
                     while (totalRead < dataLength)
                     {
-                        int read = await _statusStream.ReadAsync(jsonBuffer, totalRead, (int)dataLength - totalRead);
+                        // 3. 여기도 ! 연산자 사용
+                        int read = await _statusStream!.ReadAsync(jsonBuffer, totalRead, (int)dataLength - totalRead);
                         if (read == 0) throw new Exception("Socket Closed");
                         totalRead += read;
                     }
@@ -172,15 +202,19 @@ namespace NovaniX_EM2.Communication
                         using (JsonDocument doc = JsonDocument.Parse(jsonResponse))
                         {
                             JsonElement root = doc.RootElement;
-                            // 기존 코드
-                            // Application.Current.Dispatcher.Invoke(() =>
-                            // 변경 후 코드 (System.Windows.를 앞에 붙여줍니다)
-                            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                            System.Windows.Application.Current?.Dispatcher?.Invoke(() =>
                             {
                                 if (root.TryGetProperty("battery_level", out JsonElement batEl))
                                     BatteryLevel = batEl.GetDouble() * 100;
+
                                 if (root.TryGetProperty("x", out JsonElement xEl)) PosX = xEl.GetDouble();
                                 if (root.TryGetProperty("y", out JsonElement yEl)) PosY = yEl.GetDouble();
+                                if (root.TryGetProperty("angle", out JsonElement angleEl)) PosAngle = angleEl.GetDouble() * (180.0 / Math.PI); // Radian을 Degree로 변환 시 적용
+
+                                // [추가된 속도 모니터링 파싱]
+                                if (root.TryGetProperty("vx", out JsonElement vxEl)) SpeedVx = vxEl.GetDouble();
+                                if (root.TryGetProperty("vy", out JsonElement vyEl)) SpeedVy = vyEl.GetDouble();
+                                if (root.TryGetProperty("w", out JsonElement wEl)) SpeedW = wEl.GetDouble();
                             });
                         }
                     }
@@ -189,11 +223,176 @@ namespace NovaniX_EM2.Communication
             catch { IsStatusConnected = false; }
         }
 
+        // --- 새로 추가되는 AMR 상태 모니터링 프로퍼티 ---
+
+        private string _motionStateText = "정지 상태";
+        public string MotionStateText
+        {
+            get => _motionStateText;
+            set { _motionStateText = value; OnPropertyChanged(); }
+        }
+
+        private double _posAngle;
+        public double PosAngle // AMR의 현재 회전 각도 (Degree)
+        {
+            get => _posAngle;
+            set { _posAngle = value; OnPropertyChanged(); }
+        }
+
+        // Map UI에 보여주기 위한 변환된 화면(Pixel) 좌표
+        // 실제 X,Y (m)에 배율(Scale)을 곱하고 오프셋을 더해 구해야 합니다.
+        private double _posX_UI;
+        public double PosX_UI
+        {
+            get => _posX_UI;
+            set { _posX_UI = value; OnPropertyChanged(); }
+        }
+
+        private double _posY_UI;
+        public double PosY_UI
+        {
+            get => _posY_UI;
+            set { _posY_UI = value; OnPropertyChanged(); }
+        }
+
+        // 클릭하여 지정된 타겟 포인트 UI 좌표
+        private double _targetPosX_UI;
+        public double TargetPosX_UI
+        {
+            get => _targetPosX_UI;
+            set { _targetPosX_UI = value; OnPropertyChanged(); }
+        }
+
+        private double _targetPosY_UI;
+        public double TargetPosY_UI
+        {
+            get => _targetPosY_UI;
+            set { _targetPosY_UI = value; OnPropertyChanged(); }
+        }
+
+        // ---------------------------------------------
+
+        // 수정 후 코드 (마찬가지로 ? 추가)
         public void AddLog(string msg)
         {
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            // 기존 코드: System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            System.Windows.Application.Current?.Dispatcher?.Invoke(() =>
             {
                 LogMessage = $"[{DateTime.Now:HH:mm:ss}] {msg}\n" + LogMessage;
+            });
+        }
+
+        // ------------------------------------------------------------------
+        // [SeerAmrController 클래스 내부에 아래 프로퍼티와 메서드를 추가합니다]
+        // ------------------------------------------------------------------
+
+        // 1. 스케줄링 및 경로 UI 바인딩 변수
+        private ObservableCollection<AmrWaypoint> _waypointQueue = new ObservableCollection<AmrWaypoint>();
+        public ObservableCollection<AmrWaypoint> WaypointQueue
+        {
+            get => _waypointQueue;
+            set { _waypointQueue = value; OnPropertyChanged(); }
+        }
+
+        // LiDAR Point Cloud UI 바인딩 (UI 성능을 위해 간단한 Point 배열 사용)
+        private PointCollection _lidarPoints = new PointCollection();
+        public PointCollection LidarPoints
+        {
+            get => _lidarPoints;
+            set { _lidarPoints = value; OnPropertyChanged(); }
+        }
+
+        private bool _isNavigating = false;
+        private int _currentWaypointIndex = -1;
+
+        // 2. 다중 포인트 스케줄 추가 함수
+        public void AddWaypointToSchedule(double realX, double realY, double uiX, double uiY)
+        {
+            char pointName = (char)('A' + WaypointQueue.Count);
+            WaypointQueue.Add(new AmrWaypoint
+            {
+                Name = pointName.ToString(),
+                TargetX = realX,
+                TargetY = realY,
+                UiX = uiX,
+                UiY = uiY,
+                Status = "예정"
+            });
+        }
+
+        // 3. 스케줄링 주행 시작 (API 3051)
+        public async void StartNavigationSchedule()
+        {
+            if (WaypointQueue.Count == 0 || _isNavigating) return;
+
+            _isNavigating = true;
+            _currentWaypointIndex = 0;
+            await GoToNextWaypoint();
+        }
+
+        private async System.Threading.Tasks.Task GoToNextWaypoint()
+        {
+            if (_currentWaypointIndex >= WaypointQueue.Count)
+            {
+                _isNavigating = false;
+                AddLog("[스케줄링 종료] 모든 경로 이동 완료");
+                return;
+            }
+
+            var target = WaypointQueue[_currentWaypointIndex];
+            target.Status = "이동중";
+
+            // Seer API 3051: 특정 좌표로 자율 주행 (장애물 회피 기본 포함)
+            var payload = new
+            {
+                x = target.TargetX,
+                y = target.TargetY,
+                angle = 0.0 // 필요에 따라 목표 각도 설정
+            };
+            string json = JsonSerializer.Serialize(payload);
+
+            await SendControlPacketAsync(3051, json);
+            AddLog($"[네비게이션] {target.Name} 지점(X:{target.TargetX:F2}, Y:{target.TargetY:F2})으로 이동 명령 전송");
+        }
+
+        // 4. 상태 파싱 루프(ReceiveStatusLoopAsync) 내부에 추가할 체크 로직
+        // API 1000 또는 1020 수신 시 도착 여부 판단
+        public async void CheckNavigationStatus(int taskStatus)
+        {
+            // taskStatus == 4 (Completed/도착) 이라고 가정 (Seer 프로토콜 버전에 따라 다를 수 있음)
+            if (_isNavigating && taskStatus == 4)
+            {
+                var target = WaypointQueue[_currentWaypointIndex];
+                target.Status = "도착";
+                AddLog($"[네비게이션] {target.Name} 지점 도착 완료");
+
+                _currentWaypointIndex++;
+
+                // 잠시 대기 후 다음 지점으로 출발
+                await System.Threading.Tasks.Task.Delay(2000);
+                await GoToNextWaypoint();
+            }
+        }
+
+        // 5. LiDAR 데이터(API 1004 등) 파싱 시 호출할 함수 (가상 예시)
+        public void UpdateLidarData(double[] distances, double[] angles)
+        {
+            // Application 모호성 에러 방지를 위해 System.Windows 명시
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                // PointCollection은 System.Windows.Media 소속이므로 Using이 잘 되어 있다면 문제없음
+                System.Windows.Media.PointCollection pts = new System.Windows.Media.PointCollection();
+
+                for (int i = 0; i < distances.Length; i++)
+                {
+                    // 실제 거리와 각도를 UI 화면 Pixel(UiX, UiY) 좌표계로 변환하는 스케일링 로직 필요
+                    double px = PosX_UI + (distances[i] * Math.Cos(angles[i]) * 50); // 50은 배율
+                    double py = PosY_UI + (distances[i] * Math.Sin(angles[i]) * 50);
+
+                    // Point 모호성 에러(System.Drawing.Point 충돌) 방지를 위해 System.Windows.Point 명시
+                    pts.Add(new System.Windows.Point(px, py));
+                }
+                LidarPoints = pts;
             });
         }
 
@@ -204,8 +403,8 @@ namespace NovaniX_EM2.Communication
         private ushort ParseBigEndianUInt16(byte[] buf, int idx) { byte[] b = new byte[2]; Buffer.BlockCopy(buf, idx, b, 0, 2); if (BitConverter.IsLittleEndian) Array.Reverse(b); return BitConverter.ToUInt16(b, 0); }
         #endregion
 
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string name = null) =>
+        public event PropertyChangedEventHandler? PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string? name = null) =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 }
