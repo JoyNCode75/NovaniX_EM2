@@ -195,58 +195,120 @@
                 </ItemsControl>
             </GroupBox>
 
-            <GroupBox Grid.Row="3" Header="수동 이동 제어 (키보드 연동 JOG)" Margin="0,0,0,15" Padding="10">
-                <StackPanel>
-                    <TextBlock Text="※ 빈 곳을 한 번 클릭하면 키보드 제어가 활성화됩니다." Foreground="Gray" FontSize="11" Margin="0,0,0,10" HorizontalAlignment="Center"/>
+            <TabControl Grid.Row="3" Margin="0,0,0,15" Background="White">
 
-                    <ComboBox x:Name="cbDriveMode" SelectionChanged="CbDriveMode_SelectionChanged" Margin="0,0,0,15" Padding="5">
-                        <ComboBoxItem Content="차동 구동 모드 (SRC-880-T)" IsSelected="True"/>
-                        <ComboBoxItem Content="쌍타발 전방향 모드 (SRC-1100)"/>
-                    </ComboBox>
+                <TabItem Header="수동 이동 제어 (키보드 연동 JOG)">
+                    <StackPanel Margin="10">
+                        <TextBlock Text="※ 빈 곳을 한 번 클릭하면 키보드 제어가 활성화됩니다." Foreground="Gray" FontSize="11" Margin="0,0,0,10" HorizontalAlignment="Center"/>
 
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,15">
-                        <TextBlock Text="이동 속도(m/s):" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                        <TextBox x:Name="txtJogSpeed" Text="0.3" Width="50" Padding="2"/>
+                        <ComboBox x:Name="cbDriveMode" SelectionChanged="CbDriveMode_SelectionChanged" Margin="0,0,0,15" Padding="5">
+                            <ComboBoxItem Content="차동 구동 모드 (SRC-880-T)" IsSelected="True"/>
+                            <ComboBoxItem Content="쌍타발 전방향 모드 (SRC-1100)"/>
+                        </ComboBox>
 
-                        <TextBlock Text="회전 속도(rad/s):" VerticalAlignment="Center" Margin="20,0,5,0"/>
-                        <TextBox x:Name="txtJogRotSpeed" Text="0.2" Width="50" Padding="2"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,15">
+                            <TextBlock Text="이동 속도(m/s):" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                            <TextBox x:Name="txtJogSpeed" Text="0.3" Width="50" Padding="2"/>
+
+                            <TextBlock Text="회전 속도(rad/s):" VerticalAlignment="Center" Margin="20,0,5,0"/>
+                            <TextBox x:Name="txtJogRotSpeed" Text="0.2" Width="50" Padding="2"/>
+                        </StackPanel>
+
+                        <Grid HorizontalAlignment="Center" Margin="0,0,0,20">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="65"/>
+                                <RowDefinition Height="65"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="65"/>
+                                <ColumnDefinition Width="65"/>
+                                <ColumnDefinition Width="65"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Button x:Name="btnJogLeft" Grid.Row="0" Grid.Column="0" PreviewMouseDown="Jog_MouseDown" PreviewMouseUp="Jog_MouseUp" MouseLeave="Jog_MouseLeave" Tag="Left" Margin="3" Cursor="Hand" IsEnabled="False">
+                                <TextBlock Text="◀&#x0a;Q" TextAlignment="Center" FontWeight="Bold" FontSize="14"/>
+                            </Button>
+                            <Button Grid.Row="0" Grid.Column="1" PreviewMouseDown="Jog_MouseDown" PreviewMouseUp="Jog_MouseUp" MouseLeave="Jog_MouseLeave" Tag="Forward" Margin="3" Cursor="Hand">
+                                <TextBlock Text="▲&#x0a;W" TextAlignment="Center" FontWeight="Bold" FontSize="14"/>
+                            </Button>
+                            <Button x:Name="btnJogRight" Grid.Row="0" Grid.Column="2" PreviewMouseDown="Jog_MouseDown" PreviewMouseUp="Jog_MouseUp" MouseLeave="Jog_MouseLeave" Tag="Right" Margin="3" Cursor="Hand" IsEnabled="False">
+                                <TextBlock Text="▶&#x0a;R" TextAlignment="Center" FontWeight="Bold" FontSize="14"/>
+                            </Button>
+                            <Button Grid.Row="1" Grid.Column="0" PreviewMouseDown="Jog_MouseDown" PreviewMouseUp="Jog_MouseUp" MouseLeave="Jog_MouseLeave" Tag="TurnLeft" Margin="3" Cursor="Hand">
+                                <TextBlock Text="↺&#x0a;A" TextAlignment="Center" FontWeight="Bold" FontSize="16"/>
+                            </Button>
+                            <Button Grid.Row="1" Grid.Column="1" PreviewMouseDown="Jog_MouseDown" PreviewMouseUp="Jog_MouseUp" MouseLeave="Jog_MouseLeave" Tag="Backward" Margin="3" Cursor="Hand">
+                                <TextBlock Text="▼&#x0a;S" TextAlignment="Center" FontWeight="Bold" FontSize="14"/>
+                            </Button>
+                            <Button Grid.Row="1" Grid.Column="2" PreviewMouseDown="Jog_MouseDown" PreviewMouseUp="Jog_MouseUp" MouseLeave="Jog_MouseLeave" Tag="TurnRight" Margin="3" Cursor="Hand">
+                                <TextBlock Text="↻&#x0a;D" TextAlignment="Center" FontWeight="Bold" FontSize="16"/>
+                            </Button>
+                        </Grid>
+
+                        <Button Content="즉시 정지 (API 2000)" Click="BtnStop_Click" Height="40" Background="DarkRed" Foreground="White" FontWeight="Bold"/>
                     </StackPanel>
+                </TabItem>
 
-                    <Grid HorizontalAlignment="Center" Margin="0,0,0,20">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="65"/>
-                            <RowDefinition Height="65"/>
-                        </Grid.RowDefinitions>
+                <TabItem Header="AMR Input / Output">
+                    <Grid Margin="15">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="65"/>
-                            <ColumnDefinition Width="65"/>
-                            <ColumnDefinition Width="65"/>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="1*"/>
                         </Grid.ColumnDefinitions>
 
-                        <Button x:Name="btnJogLeft" Grid.Row="0" Grid.Column="0" PreviewMouseDown="Jog_MouseDown" PreviewMouseUp="Jog_MouseUp" MouseLeave="Jog_MouseLeave" Tag="Left" Margin="3" Cursor="Hand" IsEnabled="False">
-                            <TextBlock Text="◀&#x0a;Q" TextAlignment="Center" FontWeight="Bold" FontSize="14"/>
-                        </Button>
-                        <Button Grid.Row="0" Grid.Column="1" PreviewMouseDown="Jog_MouseDown" PreviewMouseUp="Jog_MouseUp" MouseLeave="Jog_MouseLeave" Tag="Forward" Margin="3" Cursor="Hand">
-                            <TextBlock Text="▲&#x0a;W" TextAlignment="Center" FontWeight="Bold" FontSize="14"/>
-                        </Button>
-                        <Button x:Name="btnJogRight" Grid.Row="0" Grid.Column="2" PreviewMouseDown="Jog_MouseDown" PreviewMouseUp="Jog_MouseUp" MouseLeave="Jog_MouseLeave" Tag="Right" Margin="3" Cursor="Hand" IsEnabled="False">
-                            <TextBlock Text="▶&#x0a;R" TextAlignment="Center" FontWeight="Bold" FontSize="14"/>
-                        </Button>
-                        <Button Grid.Row="1" Grid.Column="0" PreviewMouseDown="Jog_MouseDown" PreviewMouseUp="Jog_MouseUp" MouseLeave="Jog_MouseLeave" Tag="TurnLeft" Margin="3" Cursor="Hand">
-                            <TextBlock Text="↺&#x0a;A" TextAlignment="Center" FontWeight="Bold" FontSize="16"/>
-                        </Button>
-                        <Button Grid.Row="1" Grid.Column="1" PreviewMouseDown="Jog_MouseDown" PreviewMouseUp="Jog_MouseUp" MouseLeave="Jog_MouseLeave" Tag="Backward" Margin="3" Cursor="Hand">
-                            <TextBlock Text="▼&#x0a;S" TextAlignment="Center" FontWeight="Bold" FontSize="14"/>
-                        </Button>
-                        <Button Grid.Row="1" Grid.Column="2" PreviewMouseDown="Jog_MouseDown" PreviewMouseUp="Jog_MouseUp" MouseLeave="Jog_MouseLeave" Tag="TurnRight" Margin="3" Cursor="Hand">
-                            <TextBlock Text="↻&#x0a;D" TextAlignment="Center" FontWeight="Bold" FontSize="16"/>
-                        </Button>
+                        <GroupBox Grid.Column="0" Header="Input (DI)">
+                            <ItemsControl ItemsSource="{Binding AmrInputs}" Margin="5">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" Margin="0,7">
+                                            <Ellipse Width="18" Height="18" Margin="0,0,10,0" Stroke="Gray" StrokeThickness="1">
+                                                <Ellipse.Style>
+                                                    <Style TargetType="Ellipse">
+                                                        <Setter Property="Fill" Value="#E53935"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsOn}" Value="True">
+                                                                <Setter Property="Fill" Value="#43A047"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Ellipse.Style>
+                                            </Ellipse>
+                                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" FontSize="14"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </GroupBox>
+
+                        <GroupBox Grid.Column="2" Header="Output (DO)">
+                            <ItemsControl ItemsSource="{Binding AmrOutputs}" Margin="5">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Click="BtnToggleOutput_Click" Background="Transparent" BorderThickness="0" Margin="0,2" Cursor="Hand" HorizontalContentAlignment="Left">
+                                            <StackPanel Orientation="Horizontal" Margin="0,4">
+                                                <Ellipse Width="18" Height="18" Margin="0,0,10,0" Stroke="Gray" StrokeThickness="1">
+                                                    <Ellipse.Style>
+                                                        <Style TargetType="Ellipse">
+                                                            <Setter Property="Fill" Value="#E53935"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsOn}" Value="True">
+                                                                    <Setter Property="Fill" Value="#43A047"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Ellipse.Style>
+                                                </Ellipse>
+                                                <TextBlock Text="{Binding Name}" VerticalAlignment="Center" FontSize="14"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </GroupBox>
                     </Grid>
-
-                    <Button Content="즉시 정지 (API 2000)" Click="BtnStop_Click" Height="40" Background="DarkRed" Foreground="White" FontWeight="Bold"/>
-                </StackPanel>
-            </GroupBox>
-
+                </TabItem>
+            </TabControl>
             <TextBlock Grid.Row="4" Text="제어 로그" FontWeight="Bold" Margin="0,0,0,5"/>
             <TextBox Grid.Row="5" Text="{Binding LogMessage, Mode=OneWay}" IsReadOnly="True" VerticalScrollBarVisibility="Auto" Background="#F0F0F0" Margin="0,0,0,10"/>
         </Grid>

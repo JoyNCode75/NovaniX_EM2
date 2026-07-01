@@ -229,5 +229,53 @@ namespace NovaniX_EM2.Views
             }
             SeerAmrController.Instance.StartNavigationSchedule();
         }
+
+        // =========================================================================
+        // [AMR Output (DO) 제어 이벤트]
+        // =========================================================================
+        private async void BtnToggleOutput_Click(object sender, RoutedEventArgs e)
+        {
+            if (!_isLoaded || !SeerAmrController.Instance.IsControlConnected)
+            {
+                System.Windows.MessageBox.Show("AMR 제어 포트(19205)가 연결되어 있지 않습니다.", "알림");
+                return;
+            }
+
+            // 클릭한 버튼의 데이터 컨텍스트(AmrIoNode) 가져오기
+            if (sender is System.Windows.Controls.Button btn && btn.DataContext is AmrIoNode node)
+            {
+                // 현재 상태의 반대로 목표 상태 설정 (True -> False, False -> True)
+                bool targetState = !node.IsOn;
+
+                try
+                {
+                    // Seer AMR 프로토콜 DO 제어 페이로드 구성
+                    // ※ 주의: 실제 사용 중인 Seer 펌웨어 버전에 따라 변수명(id -> DO_id 등)이나 
+                    // API 번호가 다를 수 있으니 Seer 통신 매뉴얼을 확인해 주세요.
+                    var payload = new
+                    {
+                        id = node.Index,      // DO 핀 번호 (0 ~ 9)
+                        status = targetState  // true = ON, false = OFF
+                    };
+
+                    string json = JsonSerializer.Serialize(payload);
+
+                    // API 6002: Seer 프로토콜의 범용 DO 설정 API (버전에 따라 2011 등을 사용할 수 있음)
+                    ushort doControlApi = 6002;
+
+                    await SeerAmrController.Instance.SendControlPacketAsync(doControlApi, json);
+
+                    SeerAmrController.Instance.AddLog($"Output [{node.Name}] 제어 명령 전송 (Target: {targetState})");
+
+                    // 즉각적인 UI 반응을 원한다면 아래 주석을 해제하세요. 
+                    // (일반적으로는 API 1000 상태 응답을 통해 자연스럽게 업데이트되는 것을 권장합니다.)
+                    // node.IsOn = targetState; 
+                }
+                catch (Exception ex)
+                {
+                    SeerAmrController.Instance.AddLog($"Output 제어 에러: {ex.Message}");
+                }
+            }
+        }
     }
 }

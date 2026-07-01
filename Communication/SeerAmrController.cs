@@ -12,6 +12,24 @@ using System.Windows.Media;
 
 namespace NovaniX_EM2.Communication
 {
+    // SeerAmrController 클래스 외부에 (동일한 네임스페이스 안) 추가합니다.
+    public class AmrIoNode : INotifyPropertyChanged
+    {
+        private bool _isOn;
+        public bool IsOn
+        {
+            get => _isOn;
+            set { _isOn = value; OnPropertyChanged(); }
+        }
+
+        public int Index { get; set; }
+        public string Name { get; set; } = string.Empty;
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string? name = null) =>
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+    }
+
     public class SeerAmrController : INotifyPropertyChanged
     {
         // 글로벌 싱글톤 인스턴스
@@ -89,7 +107,7 @@ namespace NovaniX_EM2.Communication
             set { _logMessage = value; OnPropertyChanged(); }
         }
 
-        private SeerAmrController() { }
+//        private SeerAmrController() { }
 
         public async Task ConnectAsync(string ip)
         {
@@ -215,6 +233,19 @@ namespace NovaniX_EM2.Communication
                                 if (root.TryGetProperty("vx", out JsonElement vxEl)) SpeedVx = vxEl.GetDouble();
                                 if (root.TryGetProperty("vy", out JsonElement vyEl)) SpeedVy = vyEl.GetDouble();
                                 if (root.TryGetProperty("w", out JsonElement wEl)) SpeedW = wEl.GetDouble();
+
+                                // DIO 추가
+                                if (root.TryGetProperty("DI", out JsonElement diEl) && diEl.ValueKind == JsonValueKind.Array)
+                                {
+                                    for (int i = 0; i < diEl.GetArrayLength() && i < 10; i++)
+                                        AmrInputs[i].IsOn = diEl[i].GetBoolean();
+                                }
+
+                                if (root.TryGetProperty("DO", out JsonElement doEl) && doEl.ValueKind == JsonValueKind.Array)
+                                {
+                                    for (int i = 0; i < doEl.GetArrayLength() && i < 10; i++)
+                                        AmrOutputs[i].IsOn = doEl[i].GetBoolean();
+                                }
                             });
                         }
                     }
@@ -394,6 +425,32 @@ namespace NovaniX_EM2.Communication
                 }
                 LidarPoints = pts;
             });
+        }
+
+        // --- 새로 추가되는 AMR I/O 프로퍼티 ---
+        private ObservableCollection<AmrIoNode> _amrInputs = new ObservableCollection<AmrIoNode>();
+        public ObservableCollection<AmrIoNode> AmrInputs
+        {
+            get => _amrInputs;
+            set { _amrInputs = value; OnPropertyChanged(); }
+        }
+
+        private ObservableCollection<AmrIoNode> _amrOutputs = new ObservableCollection<AmrIoNode>();
+        public ObservableCollection<AmrIoNode> AmrOutputs
+        {
+            get => _amrOutputs;
+            set { _amrOutputs = value; OnPropertyChanged(); }
+        }
+
+        // 기존 private SeerAmrController() { } 생성자를 아래와 같이 수정합니다.
+        private SeerAmrController()
+        {
+            // I/O 노드(0~9) 초기화 
+            for (int i = 0; i < 10; i++)
+            {
+                AmrInputs.Add(new AmrIoNode { Index = i, Name = $"Input Name {i}", IsOn = false });
+                AmrOutputs.Add(new AmrIoNode { Index = i, Name = $"Output Name {i}", IsOn = false });
+            }
         }
 
         #region Big-Endian Helpers
