@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using NovaniX_EM2.Communication;
+using NovaniX_EM2.Models;
 
 namespace NovaniX_EM2.Views
 {

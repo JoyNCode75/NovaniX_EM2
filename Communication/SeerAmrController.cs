@@ -1,4 +1,5 @@
 ﻿using NovaniX_EM2.Models;
+using NovaniX_EM2.Helpers;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -13,22 +14,6 @@ using System.Windows.Media;
 namespace NovaniX_EM2.Communication
 {
     // SeerAmrController 클래스 외부에 (동일한 네임스페이스 안) 추가합니다.
-    public class AmrIoNode : INotifyPropertyChanged
-    {
-        private bool _isOn;
-        public bool IsOn
-        {
-            get => _isOn;
-            set { _isOn = value; OnPropertyChanged(); }
-        }
-
-        public int Index { get; set; }
-        public string Name { get; set; } = string.Empty;
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string? name = null) =>
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-    }
 
     public class SeerAmrController : INotifyPropertyChanged
     {
@@ -428,6 +413,8 @@ namespace NovaniX_EM2.Communication
         }
 
         // --- 새로 추가되는 AMR I/O 프로퍼티 ---
+        private const string IO_CONFIG_FILE_PATH = "Config/AmrIoSettings.json";
+
         private ObservableCollection<AmrIoNode> _amrInputs = new ObservableCollection<AmrIoNode>();
         public ObservableCollection<AmrIoNode> AmrInputs
         {
@@ -442,17 +429,53 @@ namespace NovaniX_EM2.Communication
             set { _amrOutputs = value; OnPropertyChanged(); }
         }
 
-        // 기존 private SeerAmrController() { } 생성자를 아래와 같이 수정합니다.
         private SeerAmrController()
         {
-            // I/O 노드(0~9) 초기화 
-            for (int i = 0; i < 10; i++)
-            {
-                AmrInputs.Add(new AmrIoNode { Index = i, Name = $"Input Name {i}", IsOn = false });
-                AmrOutputs.Add(new AmrIoNode { Index = i, Name = $"Output Name {i}", IsOn = false });
-            }
+            LoadIoConfiguration();
         }
 
+        // I/O 설정 불러오기 및 초기화 로직
+        public void LoadIoConfiguration()
+        {
+            AmrIoConfig? config = JsonHelper.Load<AmrIoConfig>(IO_CONFIG_FILE_PATH);
+
+            if (config == null)
+            {
+                // 1. 파일이 없으면 기본 설정 생성
+                config = new AmrIoConfig();
+                for (int i = 0; i < config.TotalInputCount; i++)
+                    config.Inputs.Add(new AmrIoNode { Index = i, Name = $"Input {i}", IsUsed = true, Address = $"DI_{i}" });
+
+                for (int i = 0; i < config.TotalOutputCount; i++)
+                    config.Outputs.Add(new AmrIoNode { Index = i, Name = $"Output {i}", IsUsed = true, Address = $"DO_{i}" });
+
+                // 2. 기본값 JSON으로 저장
+                JsonHelper.Save(IO_CONFIG_FILE_PATH, config);
+            }
+
+            // 3. UI 바인딩용 컬렉션에 적용
+            System.Windows.Application.Current?.Dispatcher?.Invoke(() =>
+            {
+                AmrInputs.Clear();
+                foreach (var item in config.Inputs) AmrInputs.Add(item);
+
+                AmrOutputs.Clear();
+                foreach (var item in config.Outputs) AmrOutputs.Add(item);
+            });
+        }
+
+        // (참고) 설정 화면에서 내용을 바꾸고 저장 버튼을 눌렀을 때 호출할 메서드
+        public void SaveIoConfiguration()
+        {
+            var config = new AmrIoConfig
+            {
+                TotalInputCount = AmrInputs.Count,
+                TotalOutputCount = AmrOutputs.Count,
+                Inputs = new List<AmrIoNode>(AmrInputs),
+                Outputs = new List<AmrIoNode>(AmrOutputs)
+            };
+            JsonHelper.Save(IO_CONFIG_FILE_PATH, config);
+        }
         #region Big-Endian Helpers
         private byte[] ToBigEndian(ushort value) { var b = BitConverter.GetBytes(value); if (BitConverter.IsLittleEndian) Array.Reverse(b); return b; }
         private byte[] ToBigEndian(uint value) { var b = BitConverter.GetBytes(value); if (BitConverter.IsLittleEndian) Array.Reverse(b); return b; }

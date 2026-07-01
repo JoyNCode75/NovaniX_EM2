@@ -8,6 +8,10 @@
              PreviewKeyUp="UserControl_PreviewKeyUp"
              MouseLeftButtonDown="UserControl_MouseLeftButtonDown">
 
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </UserControl.Resources>
+    
     <Grid Margin="20">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1.5*"/>
@@ -261,7 +265,8 @@
                             <ItemsControl ItemsSource="{Binding AmrInputs}" Margin="5">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <StackPanel Orientation="Horizontal" Margin="0,7">
+                                        <StackPanel Orientation="Horizontal" Margin="0,7"
+                                                    Visibility="{Binding IsUsed, Converter={StaticResource BoolToVis}}">
                                             <Ellipse Width="18" Height="18" Margin="0,0,10,0" Stroke="Gray" StrokeThickness="1">
                                                 <Ellipse.Style>
                                                     <Style TargetType="Ellipse">
@@ -285,7 +290,8 @@
                             <ItemsControl ItemsSource="{Binding AmrOutputs}" Margin="5">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Button Click="BtnToggleOutput_Click" Background="Transparent" BorderThickness="0" Margin="0,2" Cursor="Hand" HorizontalContentAlignment="Left">
+                                        <Button Click="BtnToggleOutput_Click" Background="Transparent" BorderThickness="0" Margin="0,2" Cursor="Hand" HorizontalContentAlignment="Left"
+                                                Visibility="{Binding IsUsed, Converter={StaticResource BoolToVis}}">
                                             <StackPanel Orientation="Horizontal" Margin="0,4">
                                                 <Ellipse Width="18" Height="18" Margin="0,0,10,0" Stroke="Gray" StrokeThickness="1">
                                                     <Ellipse.Style>

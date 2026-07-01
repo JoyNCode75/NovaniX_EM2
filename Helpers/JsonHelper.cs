@@ -13,13 +13,14 @@ namespace NovaniX_EM2.Helpers
         private static readonly JsonSerializerOptions _options = new JsonSerializerOptions
         {
             WriteIndented = true,
+            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
             PropertyNameCaseInsensitive = true
         };
 
         /// <summary>
         /// JSON 파일 생성 및 저장 (기존 파일이 있으면 덮어씁니다)
         /// </summary>
-        public static void Save<T>(string filePath, T data)
+        public static bool Save<T>(string filePath, T data)
         {
             try
             {
@@ -33,11 +34,12 @@ namespace NovaniX_EM2.Helpers
 
                 string jsonString = JsonSerializer.Serialize(data, _options);
                 File.WriteAllText(filePath, jsonString);
+                return true;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"JSON 저장 오류: {ex.Message}");
-                throw;
+                return false;
             }
         }
 
@@ -95,19 +97,21 @@ namespace NovaniX_EM2.Helpers
         /// <summary>
         /// JSON 파일 삭제
         /// </summary>
-        public static void Delete(string filePath)
+        public static bool Delete(string filePath)
         {
             try
             {
                 if (File.Exists(filePath))
                 {
                     File.Delete(filePath);
+                    return true;
                 }
+                return false;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"JSON 삭제 오류: {ex.Message}");
-                throw;
+                return false;
             }
         }
     }
