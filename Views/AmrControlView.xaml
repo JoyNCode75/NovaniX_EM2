@@ -133,39 +133,27 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
+                    <!-- 전체 연결 제어부 -->
                     <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,15">
-                        <TextBlock Text="통신 상태" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                        <Ellipse Width="16" Height="16" Margin="0,0,10,0" VerticalAlignment="Center">
-                            <Ellipse.Style>
-                                <Style TargetType="Ellipse">
-                                    <Setter Property="Fill" Value="#E53935"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsControlConnected}" Value="True">
-                                            <Setter Property="Fill" Value="#43A047"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Ellipse.Style>
-                        </Ellipse>
-                    </StackPanel>
-
-                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,15">
-                        <TextBlock Text="IP 주소:" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                        <TextBox x:Name="txtAmrIp" Text="192.168.1.100" Width="120" Padding="3" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                        <Button Click="BtnToggleConnect_Click" Width="120" Height="26" VerticalAlignment="Center">
+                        <TextBlock Text="IP 주소:" VerticalAlignment="Center" Margin="0,0,5,0" FontWeight="Bold"/>
+                        <TextBox x:Name="txtAmrIp" Text="192.168.1.100" Width="120" Padding="3" VerticalAlignment="Center"/>
+                        <Button Click="BtnToggleAll_Click" Width="110" Height="26" Margin="10,0,0,0" Cursor="Hand">
                             <Button.Style>
                                 <Style TargetType="Button">
+                                    <!-- 기본(Off) 상태 -->
                                     <Setter Property="Content" Value="Connect"/>
                                     <Setter Property="Background" Value="#E53935"/>
+                                    <!-- 붉은색 -->
                                     <Setter Property="Foreground" Value="White"/>
                                     <Setter Property="FontWeight" Value="Bold"/>
                                     <Style.Triggers>
+                                        <!-- 연결(On) 상태 -->
                                         <DataTrigger Binding="{Binding IsControlConnected}" Value="True">
                                             <Setter Property="Content" Value="Disconnect"/>
                                             <Setter Property="Background" Value="#43A047"/>
+                                            <!-- 초록색 -->
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
@@ -173,13 +161,132 @@
                         </Button>
                     </StackPanel>
 
-                    <StackPanel Grid.Row="2">
-                        <TextBlock Text="{Binding IsStatusConnected, StringFormat={}상태 포트(19204): {0}}" />
-                        <TextBlock Text="{Binding IsControlConnected, StringFormat={}제어 포트(19205): {0}}" Margin="0,5,0,0"/>
-                    </StackPanel>
+                    <!-- 개별 포트 상태 및 제어 목록 (한 줄에 2개씩 배치) -->
+                    <UniformGrid Grid.Row="1" Columns="2" VerticalAlignment="Top">
+
+                        <!-- 1. 상태 포트 -->
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <TextBlock Text="상태(19204):" Width="125" VerticalAlignment="Center"/>
+                            <Button Click="BtnToggleStatus_Click" Width="50" FontWeight="Bold" Cursor="Hand">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Content" Value="On"/>
+                                        <Setter Property="Background" Value="#E53935"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsStatusConnected}" Value="True">
+                                                <Setter Property="Content" Value="Off"/>
+                                                <Setter Property="Background" Value="#43A047"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </StackPanel>
+
+                        <!-- 2. 제어 포트 -->
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <TextBlock Text="제어(19205):" Width="125" VerticalAlignment="Center"/>
+                            <Button Click="BtnToggleControl_Click" Width="50" FontWeight="Bold" Cursor="Hand">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Content" Value="On"/>
+                                        <Setter Property="Background" Value="#E53935"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsControlConnected}" Value="True">
+                                                <Setter Property="Content" Value="Off"/>
+                                                <Setter Property="Background" Value="#43A047"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </StackPanel>
+
+                        <!-- 3. Navigation 포트 -->
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <TextBlock Text="Navigation(19206):" Width="125" VerticalAlignment="Center"/>
+                            <Button Click="BtnToggleNav_Click" Width="50" FontWeight="Bold" Cursor="Hand">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Content" Value="On"/>
+                                        <Setter Property="Background" Value="#E53935"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsNavConnected}" Value="True">
+                                                <Setter Property="Content" Value="Off"/>
+                                                <Setter Property="Background" Value="#43A047"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </StackPanel>
+
+                        <!-- 4. Setting API 포트 -->
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <TextBlock Text="Setting API(19207):" Width="125" VerticalAlignment="Center"/>
+                            <Button Click="BtnToggleSettingApi_Click" Width="50" FontWeight="Bold" Cursor="Hand">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Content" Value="On"/>
+                                        <Setter Property="Background" Value="#E53935"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsSettingApiConnected}" Value="True">
+                                                <Setter Property="Content" Value="Off"/>
+                                                <Setter Property="Background" Value="#43A047"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </StackPanel>
+
+                        <!-- 5. 기타 API 포트 -->
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <TextBlock Text="기타 API(19210):" Width="125" VerticalAlignment="Center"/>
+                            <Button Click="BtnToggleOtherApi_Click" Width="50" FontWeight="Bold" Cursor="Hand">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Content" Value="On"/>
+                                        <Setter Property="Background" Value="#E53935"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsOtherApiConnected}" Value="True">
+                                                <Setter Property="Content" Value="Off"/>
+                                                <Setter Property="Background" Value="#43A047"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </StackPanel>
+
+                        <!-- 6. Push API 포트 -->
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <TextBlock Text="Push API(19301):" Width="125" VerticalAlignment="Center"/>
+                            <Button Click="BtnTogglePushApi_Click" Width="50" FontWeight="Bold" Cursor="Hand">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Content" Value="On"/>
+                                        <Setter Property="Background" Value="#E53935"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsPushApiConnected}" Value="True">
+                                                <Setter Property="Content" Value="Off"/>
+                                                <Setter Property="Background" Value="#43A047"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </StackPanel>
+                    </UniformGrid>
                 </Grid>
             </Border>
-
+            
             <GroupBox Grid.Row="2" Header="경로 스케줄 진행 현황" Margin="0,0,0,15">
                 <ItemsControl ItemsSource="{Binding WaypointQueue}" Margin="10">
                     <ItemsControl.ItemsPanel>
@@ -236,7 +343,7 @@
                                 <TextBlock Text="▲&#x0a;W" TextAlignment="Center" FontWeight="Bold" FontSize="14"/>
                             </Button>
                             <Button x:Name="btnJogRight" Grid.Row="0" Grid.Column="2" PreviewMouseDown="Jog_MouseDown" PreviewMouseUp="Jog_MouseUp" MouseLeave="Jog_MouseLeave" Tag="Right" Margin="3" Cursor="Hand" IsEnabled="False">
-                                <TextBlock Text="▶&#x0a;R" TextAlignment="Center" FontWeight="Bold" FontSize="14"/>
+                                <TextBlock Text="▶&#x0a;E" TextAlignment="Center" FontWeight="Bold" FontSize="14"/>
                             </Button>
                             <Button Grid.Row="1" Grid.Column="0" PreviewMouseDown="Jog_MouseDown" PreviewMouseUp="Jog_MouseUp" MouseLeave="Jog_MouseLeave" Tag="TurnLeft" Margin="3" Cursor="Hand">
                                 <TextBlock Text="↺&#x0a;A" TextAlignment="Center" FontWeight="Bold" FontSize="16"/>

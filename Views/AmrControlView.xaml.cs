@@ -18,7 +18,7 @@ namespace NovaniX_EM2.Views
         private bool _isAPressed;
         private bool _isDPressed;
         private bool _isQPressed;
-        private bool _isRPressed;
+        private bool _isEPressed;
 
         public AmrControlView()
         {
@@ -27,24 +27,72 @@ namespace NovaniX_EM2.Views
         }
 
         // [통합] AMR 연결/해제 토글 클릭 이벤트 핸들러
-        private async void BtnToggleConnect_Click(object sender, RoutedEventArgs e)
+        // =========================================================================
+        // [포트 개별 및 전체 연결/해제 이벤트 핸들러]
+        // =========================================================================
+        private async void BtnToggleAll_Click(object sender, RoutedEventArgs e)
         {
+            // 제어 포트 연결 상태를 기준으로 전체 동작 결정
             if (SeerAmrController.Instance.IsControlConnected)
             {
-                SeerAmrController.Instance.Disconnect();
+                SeerAmrController.Instance.DisconnectAll();
             }
             else
             {
-                try
-                {
-                    await SeerAmrController.Instance.ConnectAsync(txtAmrIp.Text);
-                    this.Focus(); // 연결 완료 후 키보드 제어를 위해 포커스 부여
-                }
-                catch (Exception ex)
-                {
-                    System.Windows.MessageBox.Show("AMR 연결 실패: " + ex.Message, "에러", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+                await SeerAmrController.Instance.ConnectAllAsync(txtAmrIp.Text);
+                this.Focus(); // 연결 후 제어를 위한 포커스
             }
+        }
+
+        private async void BtnToggleStatus_Click(object sender, RoutedEventArgs e)
+        {
+            if (SeerAmrController.Instance.IsStatusConnected)
+                SeerAmrController.Instance.DisconnectStatus();
+            else
+                await SeerAmrController.Instance.ConnectStatusAsync(txtAmrIp.Text);
+        }
+
+        private async void BtnToggleControl_Click(object sender, RoutedEventArgs e)
+        {
+            if (SeerAmrController.Instance.IsControlConnected)
+                SeerAmrController.Instance.DisconnectControl();
+            else
+            {
+                await SeerAmrController.Instance.ConnectControlAsync(txtAmrIp.Text);
+                this.Focus();
+            }
+        }
+
+        private async void BtnToggleNav_Click(object sender, RoutedEventArgs e)
+        {
+            if (SeerAmrController.Instance.IsNavConnected)
+                SeerAmrController.Instance.DisconnectNav();
+            else
+                await SeerAmrController.Instance.ConnectNavAsync(txtAmrIp.Text);
+        }
+
+        private async void BtnToggleSettingApi_Click(object sender, RoutedEventArgs e)
+        {
+            if (SeerAmrController.Instance.IsSettingApiConnected)
+                SeerAmrController.Instance.DisconnectSettingApi();
+            else
+                await SeerAmrController.Instance.ConnectSettingApiAsync(txtAmrIp.Text);
+        }
+
+        private async void BtnToggleOtherApi_Click(object sender, RoutedEventArgs e)
+        {
+            if (SeerAmrController.Instance.IsOtherApiConnected)
+                SeerAmrController.Instance.DisconnectOtherApi();
+            else
+                await SeerAmrController.Instance.ConnectOtherApiAsync(txtAmrIp.Text);
+        }
+
+        private async void BtnTogglePushApi_Click(object sender, RoutedEventArgs e)
+        {
+            if (SeerAmrController.Instance.IsPushApiConnected)
+                SeerAmrController.Instance.DisconnectPushApi();
+            else
+                await SeerAmrController.Instance.ConnectPushApiAsync(txtAmrIp.Text);
         }
 
         // [오류 해결] cbDriveMode 선택 이벤트 핸들러 정상 작동
@@ -62,6 +110,9 @@ namespace NovaniX_EM2.Views
                 btnJogLeft.IsEnabled = true;
                 btnJogRight.IsEnabled = true;
             }
+
+            // === [추가] 모드 변경에 따라 JSON 파일을 다시 읽어와서 UI I/O 설정 업데이트 ===
+            SeerAmrController.Instance.LoadIoConfiguration(cbDriveMode.SelectedIndex);
         }
 
         // ==============================================================
@@ -85,7 +136,7 @@ namespace NovaniX_EM2.Views
             if (cbDriveMode.SelectedIndex == 1)
             {
                 if (_isQPressed) vy += speed;
-                if (_isRPressed) vy -= speed;
+                if (_isEPressed) vy -= speed;
             }
 
             if (_isAPressed) w += rotSpeed; // 좌회전 (반시계)
@@ -108,7 +159,7 @@ namespace NovaniX_EM2.Views
                 case "Forward": _isWPressed = isPressed; break;
                 case "Backward": _isSPressed = isPressed; break;
                 case "Left": _isQPressed = isPressed; break;
-                case "Right": _isRPressed = isPressed; break;
+                case "Right": _isEPressed = isPressed; break;
                 case "TurnLeft": _isAPressed = isPressed; break;
                 case "TurnRight": _isDPressed = isPressed; break;
             }
@@ -150,7 +201,7 @@ namespace NovaniX_EM2.Views
                 case Key.A: _isAPressed = true; break;
                 case Key.D: _isDPressed = true; break;
                 case Key.Q: _isQPressed = true; break;
-                case Key.R: _isRPressed = true; break;
+                case Key.E: _isEPressed = true; break;
                 default: handled = false; break;
             }
 
@@ -173,7 +224,7 @@ namespace NovaniX_EM2.Views
                 case Key.A: _isAPressed = false; break;
                 case Key.D: _isDPressed = false; break;
                 case Key.Q: _isQPressed = false; break;
-                case Key.R: _isRPressed = false; break;
+                case Key.E: _isEPressed = false; break;
                 default: handled = false; break;
             }
 
@@ -191,7 +242,7 @@ namespace NovaniX_EM2.Views
 
         private async void BtnStop_Click(object sender, RoutedEventArgs e)
         {
-            _isWPressed = _isSPressed = _isAPressed = _isDPressed = _isQPressed = _isRPressed = false;
+            _isWPressed = _isSPressed = _isAPressed = _isDPressed = _isQPressed = _isEPressed = false;
 
             await SeerAmrController.Instance.SendControlPacketAsync(2000, "{}");
             SeerAmrController.Instance.AddLog("[긴급 정지] API 2000 실행");

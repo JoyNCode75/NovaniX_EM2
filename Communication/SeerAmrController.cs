@@ -21,11 +21,21 @@ namespace NovaniX_EM2.Communication
         private static SeerAmrController? _instance; // ? 추가
         public static SeerAmrController Instance => _instance ?? (_instance = new SeerAmrController());
 
-        private TcpClient? _statusClient;     // ? 추가
-        private NetworkStream? _statusStream; // ? 추가
-        private TcpClient? _controlClient;    // ? 추가
-        private NetworkStream? _controlStream;// ? 추가
-        
+        private TcpClient? _statusClient;     
+        private NetworkStream? _statusStream; 
+        private TcpClient? _controlClient;    
+        private NetworkStream? _controlStream;
+
+        // === [추가] 신규 포트용 클라이언트 및 스트림 ===
+        private TcpClient? _navClient;
+        private NetworkStream? _navStream;
+        private TcpClient? _settingApiClient;
+        private NetworkStream? _settingApiStream;
+        private TcpClient? _otherApiClient;
+        private NetworkStream? _otherApiStream;
+        private TcpClient? _pushApiClient;
+        private NetworkStream? _pushApiStream;
+
         private ushort _sequenceNumber = 1;
 
         // 바인딩용 프로퍼티
@@ -41,6 +51,35 @@ namespace NovaniX_EM2.Communication
         {
             get => _isControlConnected;
             set { _isControlConnected = value; OnPropertyChanged(); }
+        }
+
+        // === [추가] 신규 포트 연결 상태 프로퍼티 ===
+        private bool _isNavConnected;
+        public bool IsNavConnected
+        {
+            get => _isNavConnected;
+            set { _isNavConnected = value; OnPropertyChanged(); }
+        }
+
+        private bool _isSettingApiConnected;
+        public bool IsSettingApiConnected
+        {
+            get => _isSettingApiConnected;
+            set { _isSettingApiConnected = value; OnPropertyChanged(); }
+        }
+
+        private bool _isOtherApiConnected;
+        public bool IsOtherApiConnected
+        {
+            get => _isOtherApiConnected;
+            set { _isOtherApiConnected = value; OnPropertyChanged(); }
+        }
+
+        private bool _isPushApiConnected;
+        public bool IsPushApiConnected
+        {
+            get => _isPushApiConnected;
+            set { _isPushApiConnected = value; OnPropertyChanged(); }
         }
 
         private double _batteryLevel;
@@ -92,46 +131,148 @@ namespace NovaniX_EM2.Communication
             set { _logMessage = value; OnPropertyChanged(); }
         }
 
-//        private SeerAmrController() { }
+        // === [추가 및 수정] 개별 포트 연결/해제 메서드 ===
 
-        public async Task ConnectAsync(string ip)
+        // 1. 상태 포트 (19204)
+        public async Task ConnectStatusAsync(string ip, int port = 19204)
         {
+            if (IsStatusConnected) return;
             try
             {
-                if (!IsStatusConnected)
-                {
-                    _statusClient = new TcpClient();
-                    await _statusClient.ConnectAsync(ip, 19204);
-                    _statusStream = _statusClient.GetStream();
-                    IsStatusConnected = true;
-                    _ = ReceiveStatusLoopAsync();
-                }
-
-                if (!IsControlConnected)
-                {
-                    _controlClient = new TcpClient();
-                    await _controlClient.ConnectAsync(ip, 19205);
-                    _controlStream = _controlClient.GetStream();
-                    IsControlConnected = true;
-                }
-                AddLog("AMR 컨트롤러 통신 연결 성공");
+                _statusClient = new TcpClient();
+                await _statusClient.ConnectAsync(ip, port);
+                _statusStream = _statusClient.GetStream();
+                IsStatusConnected = true;
+                _ = ReceiveStatusLoopAsync();
+                AddLog($"상태 포트({port}) 연결 성공");
             }
-            catch (Exception ex)
-            {
-                AddLog($"연결 실패: {ex.Message}");
-                throw;
-            }
+            catch (Exception ex) { AddLog($"상태 포트 연결 실패: {ex.Message}"); }
+        }
+        public void DisconnectStatus()
+        {
+            _statusStream?.Close(); _statusClient?.Close(); IsStatusConnected = false;
+            AddLog("상태 포트 연결 해제");
         }
 
-        public void Disconnect()
+        // 2. 제어 포트 (19205)
+        public async Task ConnectControlAsync(string ip, int port = 19205)
         {
-            _statusStream?.Close();
-            _statusClient?.Close();
-            _controlStream?.Close();
-            _controlClient?.Close();
-            IsStatusConnected = false;
-            IsControlConnected = false;
-            AddLog("AMR 연결 해제됨");
+            if (IsControlConnected) return;
+            try
+            {
+                _controlClient = new TcpClient();
+                await _controlClient.ConnectAsync(ip, port);
+                _controlStream = _controlClient.GetStream();
+                IsControlConnected = true;
+                AddLog($"제어 포트({port}) 연결 성공");
+            }
+            catch (Exception ex) { AddLog($"제어 포트 연결 실패: {ex.Message}"); }
+        }
+        public void DisconnectControl()
+        {
+            _controlStream?.Close(); _controlClient?.Close(); IsControlConnected = false;
+            AddLog("제어 포트 연결 해제");
+        }
+
+        // 3. Navigation 포트 (19206)
+        public async Task ConnectNavAsync(string ip, int port = 19206)
+        {
+            if (IsNavConnected) return;
+            try
+            {
+                _navClient = new TcpClient();
+                await _navClient.ConnectAsync(ip, port);
+                _navStream = _navClient.GetStream();
+                IsNavConnected = true;
+                AddLog($"Navigation 포트({port}) 연결 성공");
+            }
+            catch (Exception ex) { AddLog($"Navigation 포트 연결 실패: {ex.Message}"); }
+        }
+        public void DisconnectNav()
+        {
+            _navStream?.Close(); _navClient?.Close(); IsNavConnected = false;
+            AddLog("Navigation 포트 연결 해제");
+        }
+
+        // 4. Setting API 포트 (19207)
+        public async Task ConnectSettingApiAsync(string ip, int port = 19207)
+        {
+            if (IsSettingApiConnected) return;
+            try
+            {
+                _settingApiClient = new TcpClient();
+                await _settingApiClient.ConnectAsync(ip, port);
+                _settingApiStream = _settingApiClient.GetStream();
+                IsSettingApiConnected = true;
+                AddLog($"Setting API 포트({port}) 연결 성공");
+            }
+            catch (Exception ex) { AddLog($"Setting API 포트 연결 실패: {ex.Message}"); }
+        }
+        public void DisconnectSettingApi()
+        {
+            _settingApiStream?.Close(); _settingApiClient?.Close(); IsSettingApiConnected = false;
+            AddLog("Setting API 포트 연결 해제");
+        }
+
+        // 5. 기타 API 포트 (19210)
+        public async Task ConnectOtherApiAsync(string ip, int port = 19210)
+        {
+            if (IsOtherApiConnected) return;
+            try
+            {
+                _otherApiClient = new TcpClient();
+                await _otherApiClient.ConnectAsync(ip, port);
+                _otherApiStream = _otherApiClient.GetStream();
+                IsOtherApiConnected = true;
+                AddLog($"기타 API 포트({port}) 연결 성공");
+            }
+            catch (Exception ex) { AddLog($"기타 API 포트 연결 실패: {ex.Message}"); }
+        }
+        public void DisconnectOtherApi()
+        {
+            _otherApiStream?.Close(); _otherApiClient?.Close(); IsOtherApiConnected = false;
+            AddLog("기타 API 포트 연결 해제");
+        }
+
+        // 6. Push API 포트 (19301)
+        public async Task ConnectPushApiAsync(string ip, int port = 19301)
+        {
+            if (IsPushApiConnected) return;
+            try
+            {
+                _pushApiClient = new TcpClient();
+                await _pushApiClient.ConnectAsync(ip, port);
+                _pushApiStream = _pushApiClient.GetStream();
+                IsPushApiConnected = true;
+                AddLog($"Push API 포트({port}) 연결 성공");
+            }
+            catch (Exception ex) { AddLog($"Push API 포트 연결 실패: {ex.Message}"); }
+        }
+        public void DisconnectPushApi()
+        {
+            _pushApiStream?.Close(); _pushApiClient?.Close(); IsPushApiConnected = false;
+            AddLog("Push API 포트 연결 해제");
+        }
+
+        // 전체 연결 및 해제 통합 (기존 ConnectAsync/Disconnect 대체용)
+        public async Task ConnectAllAsync(string ip)
+        {
+            await ConnectStatusAsync(ip, 19204);
+            await ConnectControlAsync(ip, 19205);
+            await ConnectNavAsync(ip, 19206);
+            await ConnectSettingApiAsync(ip, 19207);
+            await ConnectOtherApiAsync(ip, 19210);
+            await ConnectPushApiAsync(ip, 19301);
+        }
+
+        public void DisconnectAll()
+        {
+            DisconnectStatus();
+            DisconnectControl();
+            DisconnectNav();
+            DisconnectSettingApi();
+            DisconnectOtherApi();
+            DisconnectPushApi();
         }
 
         // 제어 명령 전송 (2010: 속도, 2000: 정지 등)
@@ -414,6 +555,8 @@ namespace NovaniX_EM2.Communication
 
         // --- 새로 추가되는 AMR I/O 프로퍼티 ---
         private const string IO_CONFIG_FILE_PATH = "Config/AmrIoSettings.json";
+        // --- 현재 로드된 모드 인덱스 기억 ---
+        private int _currentModeIndex = 0;
 
         private ObservableCollection<AmrIoNode> _amrInputs = new ObservableCollection<AmrIoNode>();
         public ObservableCollection<AmrIoNode> AmrInputs
@@ -431,51 +574,70 @@ namespace NovaniX_EM2.Communication
 
         private SeerAmrController()
         {
-            LoadIoConfiguration();
+            LoadIoConfiguration(0); // 기본값 0번 모드로 초기 로드
         }
 
         // I/O 설정 불러오기 및 초기화 로직
-        public void LoadIoConfiguration()
+        // I/O 설정 불러오기 및 초기화 로직 (파라미터 추가)
+        public void LoadIoConfiguration(int modeIndex = 0)
         {
+            _currentModeIndex = modeIndex;
             AmrIoConfig? config = JsonHelper.Load<AmrIoConfig>(IO_CONFIG_FILE_PATH);
 
-            if (config == null)
+            // 1. 파일이 없거나 구 버전 구조일 경우 기본 설정 생성
+            if (config == null || config.Modes == null || config.Modes.Count == 0)
             {
-                // 1. 파일이 없으면 기본 설정 생성
                 config = new AmrIoConfig();
-                for (int i = 0; i < config.TotalInputCount; i++)
-                    config.Inputs.Add(new AmrIoNode { Index = i, Name = $"Input {i}", IsUsed = true, Address = $"DI_{i}" });
 
-                for (int i = 0; i < config.TotalOutputCount; i++)
-                    config.Outputs.Add(new AmrIoNode { Index = i, Name = $"Output {i}", IsUsed = true, Address = $"DO_{i}" });
+                // Mode 0: 차동 구동 모드 기본 설정
+                var mode0 = new AmrIoModeConfig { ModeIndex = 0, ModeName = "차동 구동 모드 (SRC-880-T)" };
+                for (int i = 0; i < mode0.TotalInputCount; i++) mode0.Inputs.Add(new AmrIoNode { Index = i, Name = $"Input {i}", IsUsed = true, Address = $"DI_{i}" });
+                for (int i = 0; i < mode0.TotalOutputCount; i++) mode0.Outputs.Add(new AmrIoNode { Index = i, Name = $"Output {i}", IsUsed = true, Address = $"DO_{i}" });
+                config.Modes.Add(mode0);
+
+                // Mode 1: 쌍타발 전방향 모드 기본 설정 (이름을 다르게 설정)
+                var mode1 = new AmrIoModeConfig { ModeIndex = 1, ModeName = "쌍타발 전방향 모드 (SRC-1100)" };
+                for (int i = 0; i < mode1.TotalInputCount; i++) mode1.Inputs.Add(new AmrIoNode { Index = i, Name = $"M1 Input {i}", IsUsed = true, Address = $"DI_{i}" });
+                for (int i = 0; i < mode1.TotalOutputCount; i++) mode1.Outputs.Add(new AmrIoNode { Index = i, Name = $"M1 Output {i}", IsUsed = true, Address = $"DO_{i}" });
+                config.Modes.Add(mode1);
 
                 // 2. 기본값 JSON으로 저장
                 JsonHelper.Save(IO_CONFIG_FILE_PATH, config);
             }
 
+            // 선택된 모드에 맞는 설정 찾기 (없으면 0번 인덱스 사용)
+            var selectedModeConfig = config.Modes.Find(m => m.ModeIndex == modeIndex) ?? config.Modes[0];
+
             // 3. UI 바인딩용 컬렉션에 적용
             System.Windows.Application.Current?.Dispatcher?.Invoke(() =>
             {
                 AmrInputs.Clear();
-                foreach (var item in config.Inputs) AmrInputs.Add(item);
+                foreach (var item in selectedModeConfig.Inputs) AmrInputs.Add(item);
 
                 AmrOutputs.Clear();
-                foreach (var item in config.Outputs) AmrOutputs.Add(item);
+                foreach (var item in selectedModeConfig.Outputs) AmrOutputs.Add(item);
             });
+
+            AddLog($"I/O 설정 로드 완료: {selectedModeConfig.ModeName}");
         }
 
-        // (참고) 설정 화면에서 내용을 바꾸고 저장 버튼을 눌렀을 때 호출할 메서드
+        // 설정 화면에서 내용을 바꾸고 저장할 때 호출할 메서드 (수정됨)
         public void SaveIoConfiguration()
         {
-            var config = new AmrIoConfig
+            AmrIoConfig? config = JsonHelper.Load<AmrIoConfig>(IO_CONFIG_FILE_PATH);
+            if (config != null)
             {
-                TotalInputCount = AmrInputs.Count,
-                TotalOutputCount = AmrOutputs.Count,
-                Inputs = new List<AmrIoNode>(AmrInputs),
-                Outputs = new List<AmrIoNode>(AmrOutputs)
-            };
-            JsonHelper.Save(IO_CONFIG_FILE_PATH, config);
+                var selectedMode = config.Modes.Find(m => m.ModeIndex == _currentModeIndex);
+                if (selectedMode != null)
+                {
+                    // 현재 UI의 리스트 상태를 해당 모드 설정에 반영
+                    selectedMode.Inputs = new System.Collections.Generic.List<AmrIoNode>(AmrInputs);
+                    selectedMode.Outputs = new System.Collections.Generic.List<AmrIoNode>(AmrOutputs);
+                    JsonHelper.Save(IO_CONFIG_FILE_PATH, config);
+                }
+            }
         }
+        
         #region Big-Endian Helpers
         private byte[] ToBigEndian(ushort value) { var b = BitConverter.GetBytes(value); if (BitConverter.IsLittleEndian) Array.Reverse(b); return b; }
         private byte[] ToBigEndian(uint value) { var b = BitConverter.GetBytes(value); if (BitConverter.IsLittleEndian) Array.Reverse(b); return b; }
